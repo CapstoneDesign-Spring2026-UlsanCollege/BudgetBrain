@@ -1,0 +1,139 @@
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import {
+  SunIcon,
+  MoonIcon,
+  CurrencyDollarIcon,
+  BellIcon,
+  GlobeAltIcon,
+} from '@heroicons/react/24/solid';
+
+const Settings = () => {
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [currency, setCurrency] = useState(localStorage.getItem('budgetbrain-currency') || 'NPR');
+  const [notifications, setNotifications] = useState(
+    localStorage.getItem('budgetbrain-notifications') !== 'false'
+  );
+  const [budgetAlerts, setBudgetAlerts] = useState(
+    localStorage.getItem('budgetbrain-budget-alerts') !== 'false'
+  );
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('budgetbrain-theme');
+    if (savedTheme === 'light') setIsDarkTheme(false);
+  }, []);
+
+  const handleThemeToggle = () => {
+    setIsDarkTheme((prev) => {
+      const newTheme = !prev;
+      if (newTheme) {
+        document.body.classList.remove('light-theme');
+        localStorage.setItem('budgetbrain-theme', 'dark');
+      } else {
+        document.body.classList.add('light-theme');
+        localStorage.setItem('budgetbrain-theme', 'light');
+      }
+      return newTheme;
+    });
+    toast.success(`Theme switched to ${isDarkTheme ? 'light' : 'dark'} mode`);
+  };
+
+  const handleCurrencyChange = (e) => {
+    const val = e.target.value;
+    setCurrency(val);
+    localStorage.setItem('budgetbrain-currency', val);
+    toast.success(`Currency set to ${val}`);
+  };
+
+  const handleNotificationsToggle = () => {
+    setNotifications((prev) => {
+      localStorage.setItem('budgetbrain-notifications', !prev);
+      return !prev;
+    });
+    toast.success('Notification preferences updated');
+  };
+
+  const handleBudgetAlertsToggle = () => {
+    setBudgetAlerts((prev) => {
+      localStorage.setItem('budgetbrain-budget-alerts', !prev);
+      return !prev;
+    });
+    toast.success('Budget alert preferences updated');
+  };
+
+  return (
+    <div className="grid-lg" style={{ width: '100%', maxWidth: '800px' }}>
+      <h1>Settings</h1>
+
+      <div className="profile-section">
+        <h3><SunIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> Appearance</h3>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>Theme</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Switch between dark and light mode</p>
+          </div>
+          <button className={`toggle-btn ${isDarkTheme ? 'dark' : 'light'}`} onClick={handleThemeToggle}>
+            {isDarkTheme ? <MoonIcon width={18} /> : <SunIcon width={18} />}
+            <span>{isDarkTheme ? 'Dark' : 'Light'}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="profile-section">
+        <h3><CurrencyDollarIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> Currency</h3>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>Display Currency</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Currency used for all financial values</p>
+          </div>
+          <select value={currency} onChange={handleCurrencyChange} className="settings-select">
+            <option value="NPR">रू NPR - Nepali Rupee</option>
+            <option value="USD">$ USD - US Dollar</option>
+            <option value="EUR">€ EUR - Euro</option>
+            <option value="GBP">£ GBP - British Pound</option>
+            <option value="JPY">¥ JPY - Japanese Yen</option>
+            <option value="CAD">$ CAD - Canadian Dollar</option>
+            <option value="AUD">$ AUD - Australian Dollar</option>
+            <option value="SGD">$ SGD - Singapore Dollar</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="profile-section">
+        <h3><BellIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> Notifications</h3>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>Push Notifications</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Receive alerts about your spending</p>
+          </div>
+          <label className="switch">
+            <input type="checkbox" checked={notifications} onChange={handleNotificationsToggle} />
+            <span className="switch-slider" />
+          </label>
+        </div>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>Budget Alerts</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Get notified when you're close to budget limits</p>
+          </div>
+          <label className="switch">
+            <input type="checkbox" checked={budgetAlerts} onChange={handleBudgetAlertsToggle} />
+            <span className="switch-slider" />
+          </label>
+        </div>
+      </div>
+
+      <div className="profile-section">
+        <h3><GlobeAltIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> About</h3>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>BudgetBrain</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Version 1.0.0 — Your personal budget planner</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Settings;
