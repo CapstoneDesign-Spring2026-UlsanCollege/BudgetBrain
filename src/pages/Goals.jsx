@@ -49,9 +49,11 @@ const Goals = () => {
     const amount = +addAmounts[goalId];
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
     const goal = goals.find(g => g._id === goalId);
+    if (!goal) return toast.error('Goal not found');
     try {
+      const currentSaved = typeof goal.savedAmount === 'number' ? goal.savedAmount : 0;
       const res = await api.put(`/goals/${goalId}`, {
-        savedAmount: goal.savedAmount + amount,
+        savedAmount: currentSaved + amount,
       });
       setGoals(goals.map(g => g._id === goalId ? res.data : g));
       setAddAmounts({ ...addAmounts, [goalId]: '' });
