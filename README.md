@@ -1,6 +1,5 @@
 # BudgetBrain
-
-BudgetBrain is a full-stack budget planner web application with rich analytics, savings goals, and a premium dark-themed UI with DIY LED lighting effects.
+BudgetBrain is a modern personal budget planner website designed to help users manage their finances easily and effectively. The system allows users to track income, expenses, savings, and monthly budgets through a clean and interactive dashboard. With features like transaction management, budget tracking, and financial reports, BudgetBrain helps users understand their spending habits and make smarter financial decisions. The website uses a modern dark-themed interface with animations and responsive design to provide a smooth user experience.
 
 ## Demo
 
