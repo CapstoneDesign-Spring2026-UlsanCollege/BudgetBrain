@@ -25,10 +25,7 @@ npm run dev
 
 | Dashboard | Analytics |
 |-----------|-----------|
-| Overview with budget stats, goal progress, spending summaries | Charts, spending breakdowns, budget vs actual comparisons
-<img width="1867" height="890" alt="image" src="https://github.com/user-attachments/assets/dfbfca16-3612-4a9a-93e8-9ceef182bf4d" />
-
-|
+| Overview with budget stats, goal progress, spending summaries | Charts, spending breakdowns, budget vs actual comparisons|
 
 | Budgets | Expenses |
 |---------|----------|
@@ -37,6 +34,8 @@ npm run dev
 | Profile & Settings | Savings Goals |
 |-------------------|---------------|
 | Avatar picker, inline name editing, theme/currency settings | Track targets with progress bars and emoji icons |
+DEMO VIDEO
+
 
 ## Features
 
