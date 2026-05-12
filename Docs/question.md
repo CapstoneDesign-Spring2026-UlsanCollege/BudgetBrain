@@ -1,7 +1,5 @@
 # BudgetBrain - Project Questions
 
-**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
-
 ## Architecture Questions
 1. Should we use MongoDB Atlas or a local instance for development?
 2. Is in-memory fallback acceptable for demo purposes?

@@ -32,8 +32,6 @@ Implement authentication system and basic budget management.
 ## Sprint Review
 All authentication and budget management features are complete. UI has professional styling with 3D effects and smooth transitions.
 
-**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
-
 ## Retrospective Items
 - Registration auto-login was removed per requirements
 - Distinct error messages added for login security

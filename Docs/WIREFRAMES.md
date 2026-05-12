@@ -1,7 +1,5 @@
 # Wireframes - BudgetBrain
 
-**Designed by:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
-
 ## Pages
 
 ### Login Page

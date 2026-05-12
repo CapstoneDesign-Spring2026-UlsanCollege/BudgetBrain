@@ -26,5 +26,3 @@ This document tracks all AI-generated code and its ownership within the BudgetBr
 
 ## Ownership
 All code is owned by the BudgetBrain team, Ulsan College, Spring 2026.
-
-**Team Members:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal

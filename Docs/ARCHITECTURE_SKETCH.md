@@ -1,7 +1,5 @@
 # BudgetBrain Architecture Sketch
 
-**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
-
 ## High-Level Overview
 
 ```

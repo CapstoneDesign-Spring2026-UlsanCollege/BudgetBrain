@@ -1,7 +1,5 @@
 # BudgetBrain - Risks and Blockers
 
-**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
-
 ## Current Blockers
 
 ### Critical

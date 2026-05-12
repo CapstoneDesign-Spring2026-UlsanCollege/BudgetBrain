@@ -1,11 +1,5 @@
 # BudgetBrain - Pull Request Template
 
-## Team
-- Angnima Sherpa
-- Sunil Tamang
-- Bidhan Pokhrel
-- Suvakar Dahal
-
 ## Description
 Brief description of changes made.
 

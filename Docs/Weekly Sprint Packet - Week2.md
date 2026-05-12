@@ -17,12 +17,12 @@ Authentication system implementation.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Registration API | Suvakar | Done |
-| Login API | Suvakar | Done |
-| JWT middleware | Bidhan | Done |
-| Login page UI | Angnima | Done |
-| Register page UI | Angnima | Done |
-| Profile page | Sunil | Pending |
+| Registration API | Team | Done |
+| Login API | Team | Done |
+| JWT middleware | Team | Done |
+| Login page UI | Team | Done |
+| Register page UI | Team | Done |
+| Profile page | Team | Pending |
 
 ## Blockers
 None

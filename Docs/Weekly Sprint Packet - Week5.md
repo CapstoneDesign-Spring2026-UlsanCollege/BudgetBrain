@@ -17,12 +17,12 @@ Savings goals and analytics.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Goals model | Bidhan | Done |
-| Goals API | Bidhan | Done |
-| Goals UI | Angnima | Done |
-| Add savings | Bidhan | Done |
-| Analytics page | Suvakar | Done |
-| Charts | Sunil | Done |
+| Goals model | Team | Done |
+| Goals API | Team | Done |
+| Goals UI | Team | Done |
+| Add savings | Team | Done |
+| Analytics page | Team | Done |
+| Charts | Team | Done |
 
 ## Blockers
 - Defensive null checks needed for savedAmount in Goals.jsx and Dashboard.jsx
