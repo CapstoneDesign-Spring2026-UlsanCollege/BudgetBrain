@@ -34,7 +34,13 @@ npm run dev
 | Profile & Settings | Savings Goals |
 |-------------------|---------------|
 | Avatar picker, inline name editing, theme/currency settings | Track targets with progress bars and emoji icons |
-DEMO VIDEO
+
+## DEMO DASHBOARD SCREEONSHOT
+<img width="1912" height="911" alt="image" src="https://github.com/user-attachments/assets/0f94cb0d-3fbe-48b8-9974-379a3166b585" />
+
+
+
+
 
 
 ## Features
