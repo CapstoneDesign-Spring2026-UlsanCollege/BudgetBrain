@@ -17,7 +17,7 @@ Ulsan College, Spring 2026
 To deliver a fully functional, visually polished budget planning application that demonstrates our collective proficiency in full-stack web development using modern JavaScript technologies.
 
 ## Communication Protocols
-1. **Daily Standup** — 10:00 AM via Discord, max 15 minutes
+1. **Standup** —  communication through the message ,and making free time for doing project.
 2. **Task Tracking** — All tasks managed via GitHub Issues with labels (bug, enhancement, documentation)
 3. **Code Reviews** — Every pull request requires at least one review from a different team member
 4. **Decision Log** — Architectural decisions documented in project docs for future reference
