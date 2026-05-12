@@ -18,12 +18,12 @@ Final polish, testing, and deployment preparation.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Visual effects | Team | Done |
-| Color palette | Team | Done |
-| LED lighting CSS | Team | Done |
-| README | Team | Done |
-| Build test | Team | Done |
-| Deployment prep | Team | Done |
+| Visual effects | Angnima | Done |
+| Color palette | Bidhan | Done |
+| LED lighting CSS | Bidhan | Done |
+| README | Sunil | Done |
+| Build test | Suvakar | Done |
+| Deployment prep | Sunil | Done |
 
 ## Blockers
 - GitHub Pages may be disabled at organization level

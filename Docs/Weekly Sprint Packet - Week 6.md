@@ -16,10 +16,10 @@ Deployment and documentation.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Build test | Team | Done |
-| README final | Team | Done |
-| Sprint docs | Team | Done |
-| Presentation prep | Team | Pending |
+| Build test | Suvakar | Done |
+| README final | Sunil | Done |
+| Sprint docs | Angnima | Done |
+| Presentation prep | All | Pending |
 
 ## Notes
 Duplicate of Week 6 main packet - kept for backup reference.

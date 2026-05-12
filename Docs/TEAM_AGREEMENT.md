@@ -1,6 +1,11 @@
 # Team Agreement - BudgetBrain
 
 ## Members
+- **Angnima Sherpa** - Developer
+- **Sunil Tamang** - Developer
+- **Bidhan Pokhrel** - Developer
+- **Suvakar Dahal** - Developer
+
 BudgetBrain Development Team, Ulsan College Spring 2026
 
 ## Communication

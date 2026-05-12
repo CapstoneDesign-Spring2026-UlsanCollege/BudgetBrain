@@ -1,5 +1,7 @@
 # Retrospective - BudgetBrain Sprint
 
+**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
+
 ## What Went Well
 - User authentication flow works smoothly
 - Budget CRUD operations are stable

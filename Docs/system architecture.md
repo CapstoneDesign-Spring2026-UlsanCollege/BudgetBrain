@@ -1,5 +1,7 @@
 # BudgetBrain - System Architecture
 
+**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
+
 ## Overview
 BudgetBrain follows a client-server architecture with a React frontend communicating with an Express REST API.
 

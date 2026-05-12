@@ -5,7 +5,12 @@ Capstone Design - Spring 2026
 Ulsan College, South Korea
 
 ## Team
-BudgetBrain Development Team
+| Name | Role |
+|------|------|
+| Angnima Sherpa | Developer |
+| Sunil Tamang | Developer |
+| Bidhan Pokhrel | Developer |
+| Suvakar Dahal | Developer |
 
 ## Project Timeline
 - **Week 1-2**: Project setup, requirements gathering

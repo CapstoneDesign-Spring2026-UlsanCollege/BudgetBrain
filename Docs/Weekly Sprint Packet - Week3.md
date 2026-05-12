@@ -17,12 +17,12 @@ Budget management features.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Budget model | Team | Done |
-| Budget API routes | Team | Done |
-| Budget list UI | Team | Done |
-| Budget detail UI | Team | Done |
-| Add budget form | Team | Done |
-| Edit budget | Team | Done |
+| Budget model | Suvakar | Done |
+| Budget API routes | Suvakar | Done |
+| Budget list UI | Angnima | Done |
+| Budget detail UI | Bidhan | Done |
+| Add budget form | Sunil | Done |
+| Edit budget | Bidhan | Done |
 
 ## Blockers
 None

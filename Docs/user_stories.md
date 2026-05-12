@@ -1,5 +1,7 @@
 # BudgetBrain - User Stories
 
+**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
+
 ## Authentication
 - As a user, I want to register an account so I can save my data
 - As a user, I want to login so I can access my budgets

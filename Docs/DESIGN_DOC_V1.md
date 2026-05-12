@@ -1,5 +1,7 @@
 # Design Document v1 - BudgetBrain
 
+**Team:** Angnima Sherpa, Sunil Tamang, Bidhan Pokhrel, Suvakar Dahal
+
 ## Purpose
 A full-stack budget planning application for college students to track expenses, manage budgets, set savings goals, and visualize spending patterns.
 

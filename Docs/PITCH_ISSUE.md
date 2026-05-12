@@ -30,6 +30,12 @@ BudgetBrain - a simple, beautiful budget planner that:
 - Goals achieved
 - User satisfaction
 
+## Team
+- Angnima Sherpa
+- Sunil Tamang
+- Bidhan Pokhrel
+- Suvakar Dahal
+
 ## Tech Stack
 - Frontend: React + Vite
 - Backend: Express + MongoDB

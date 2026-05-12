@@ -17,12 +17,12 @@ Expense tracking and UI polish.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Expense API | Team | Done |
-| Add expense UI | Team | Done |
-| Expense table | Team | Done |
-| Edit expense | Team | Done |
-| Theme toggle | Team | Done |
-| CSS polish | Team | Done |
+| Expense API | Suvakar | Done |
+| Add expense UI | Sunil | Done |
+| Expense table | Angnima | Done |
+| Edit expense | Bidhan | Done |
+| Theme toggle | Sunil | Done |
+| CSS polish | Angnima | Done |
 
 ## Blockers
 None

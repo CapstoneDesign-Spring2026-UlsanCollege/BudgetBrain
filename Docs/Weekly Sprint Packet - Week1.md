@@ -18,11 +18,11 @@ Project setup and requirements gathering.
 ## Tasks
 | Task | Owner | Status |
 |------|-------|--------|
-| Initialize Vite project | Team | Done |
-| Initialize Express server | Team | Done |
-| Design database schema | Team | Done |
-| Create wireframes | Team | Done |
-| Setup Git repo | Team | Done |
+| Initialize Vite project | Bidhan | Done |
+| Initialize Express server | Suvakar | Done |
+| Design database schema | All | Done |
+| Create wireframes | Angnima | Done |
+| Setup Git repo | Sunil | Done |
 
 ## Blockers
 None
