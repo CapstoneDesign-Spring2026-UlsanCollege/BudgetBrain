@@ -25,7 +25,10 @@ npm run dev
 
 | Dashboard | Analytics |
 |-----------|-----------|
-| Overview with budget stats, goal progress, spending summaries | Charts, spending breakdowns, budget vs actual comparisons |
+| Overview with budget stats, goal progress, spending summaries | Charts, spending breakdowns, budget vs actual comparisons
+<img width="1867" height="890" alt="image" src="https://github.com/user-attachments/assets/dfbfca16-3612-4a9a-93e8-9ceef182bf4d" />
+
+|
 
 | Budgets | Expenses |
 |---------|----------|
