@@ -1,8 +1,11 @@
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 const { app, connectDB, validateConfig } = require('../backend/server');
 
 let dbReady = false;
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (!dbReady) {
     try {
       validateConfig();
@@ -20,4 +23,4 @@ module.exports = async (req, res) => {
     req.url = '/api' + req.url;
   }
   app(req, res);
-};
+}
