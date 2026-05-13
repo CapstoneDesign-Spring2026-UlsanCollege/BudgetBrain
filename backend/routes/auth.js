@@ -4,6 +4,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+function signToken(payload) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is required');
+  }
+
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 });
+}
+
 // @route   POST api/auth/register
 // @desc    Register user
 // @access  Public
@@ -34,18 +42,11 @@ router.post('/register', async (req, res) => {
       }
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
-      }
-    );
+    const token = signToken(payload);
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -74,18 +75,11 @@ router.post('/login', async (req, res) => {
       }
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
-      }
-    );
+    const token = signToken(payload);
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message, stack: err.stack });
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 

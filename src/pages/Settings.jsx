@@ -87,11 +87,11 @@ const Settings = () => {
             <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Currency used for all financial values</p>
           </div>
           <select value={currency} onChange={handleCurrencyChange} className="settings-select">
-            <option value="NPR">रू NPR - Nepali Rupee</option>
+            <option value="NPR">Rs. NPR - Nepali Rupee</option>
             <option value="USD">$ USD - US Dollar</option>
-            <option value="EUR">€ EUR - Euro</option>
-            <option value="GBP">£ GBP - British Pound</option>
-            <option value="JPY">¥ JPY - Japanese Yen</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="GBP">GBP - British Pound</option>
+            <option value="JPY">JPY - Japanese Yen</option>
             <option value="CAD">$ CAD - Canadian Dollar</option>
             <option value="AUD">$ AUD - Australian Dollar</option>
             <option value="SGD">$ SGD - Singapore Dollar</option>
@@ -128,7 +128,7 @@ const Settings = () => {
         <div className="settings-row">
           <div className="settings-row-info">
             <strong>BudgetBrain</strong>
-            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Version 1.0.0 — Your personal budget planner</p>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Version 1.0.0 - Your personal budget planner</p>
           </div>
         </div>
       </div>

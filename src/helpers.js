@@ -45,6 +45,7 @@ export const deleteItem = async ({ key, id }) => {
       await api.delete(`/${key}/${id}`);
     } catch (error) {
       console.error(`Error deleting from ${key}:`, error);
+      throw error;
     }
   } else {
     if (key === 'userName') localStorage.removeItem('userName');
@@ -58,6 +59,7 @@ export const createBudget = async ({ name, amount }) => {
     return res.data;
   } catch (error) {
     console.error('Error creating budget:', error);
+    throw error;
   }
 };
 
@@ -67,6 +69,7 @@ export const createExpense = async ({ name, amount, budgetId, category }) => {
     return res.data;
   } catch (error) {
     console.error('Error creating expense:', error);
+    throw error;
   }
 };
 
@@ -109,6 +112,7 @@ export const updateBudget = async (updatedBudget) => {
     await api.put(`/budgets/${updatedBudget._id || updatedBudget.id}`, updatedBudget);
   } catch (error) {
     console.error('Error updating budget:', error);
+    throw error;
   }
 };
 
@@ -117,6 +121,7 @@ export const updateExpense = async (expenseId, updatedExpense) => {
     await api.put(`/expenses/${expenseId}`, updatedExpense);
   } catch (error) {
     console.error('Error updating expense:', error);
+    throw error;
   }
 };
 
@@ -125,5 +130,6 @@ export const deleteExpense = async (expenseId) => {
     await api.delete(`/expenses/${expenseId}`);
   } catch (error) {
     console.error('Error deleting expense:', error);
+    throw error;
   }
 };

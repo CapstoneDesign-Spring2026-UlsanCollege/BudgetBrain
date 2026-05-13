@@ -1,13 +1,7 @@
-// rrd imports
 import { Link, useFetcher } from "react-router-dom";
-
 import { useState, useEffect } from 'react';
 import { toast } from "react-toastify";
-
-// library import
 import { TrashIcon, PencilIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
-
-// helper imports
 import {
   formatCurrency,
   formatDateToLocaleString,
@@ -32,14 +26,6 @@ const ExpenseItem = ({ expense, showBudget }) => {
       }).then(items => setBudget(items[0] || null));
     }
   }, [expense, showBudget]);
-
-  const handleEditClick = () => {
-    setEditing(true);
-  };
-  
-  const handleEditCancel = () => {
-    setEditing(false);
-  };
 
   const handleEditSubmit = async () => {
     try {
@@ -93,7 +79,7 @@ const ExpenseItem = ({ expense, showBudget }) => {
           {budget ? (
             <Link to={`/budget/${budget.id}`}>{budget.name}</Link>
           ) : (
-            <span>—</span>
+            <span>-</span>
           )}
         </td>
       )}
@@ -103,13 +89,13 @@ const ExpenseItem = ({ expense, showBudget }) => {
             <button onClick={handleEditSubmit} className="btn btn--dark">
               <CheckCircleIcon width={20} />
             </button>
-            <button onClick={handleEditCancel} className="btn btn--light">
+            <button onClick={() => setEditing(false)} className="btn btn--light">
               <XCircleIcon width={20} />
             </button>
           </div>
         ) : (
           <div className="edit-buttons">
-            <button onClick={handleEditClick} className="btn btn--dark">
+            <button onClick={() => setEditing(true)} className="btn btn--dark">
               Edit <PencilIcon width={20} />
             </button>
           </div>
@@ -131,4 +117,5 @@ const ExpenseItem = ({ expense, showBudget }) => {
     </>
   );
 };
+
 export default ExpenseItem;

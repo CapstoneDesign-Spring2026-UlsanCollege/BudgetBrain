@@ -3,7 +3,6 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Goal = require('../models/Goal');
 
-// GET all goals
 router.get('/', auth, async (req, res) => {
   try {
     const goals = await Goal.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -14,7 +13,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST create goal
 router.post('/', auth, async (req, res) => {
   const { name, targetAmount, deadline, icon } = req.body;
   try {
@@ -33,7 +31,6 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// PUT update goal (add savings)
 router.put('/:id', auth, async (req, res) => {
   try {
     const goal = await Goal.findById(req.params.id);
@@ -55,7 +52,6 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// DELETE goal
 router.delete('/:id', auth, async (req, res) => {
   try {
     const goal = await Goal.findById(req.params.id);

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { 
-  ArrowRightOnRectangleIcon, 
-  EnvelopeIcon, 
-  LockClosedIcon, 
-  EyeIcon, 
+import {
+  ArrowRightOnRectangleIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  EyeIcon,
   EyeSlashIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/solid';
@@ -24,7 +24,6 @@ const Login = () => {
   const { email, password } = formData;
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
   const togglePassword = () => setShowPassword(!showPassword);
 
   const onSubmit = async e => {
@@ -47,14 +46,13 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      {/* Form Section */}
       <section className="auth-form-section">
         <div className="auth-form-wrapper">
           <div className="auth-header">
             <h1>Welcome Back</h1>
             <p>Log in to your account to continue managing your finances securely.</p>
           </div>
-          
+
           <form onSubmit={onSubmit}>
             <div className="auth-input-group">
               <EnvelopeIcon width={20} className="input-icon" />
@@ -67,7 +65,7 @@ const Login = () => {
                 required
               />
             </div>
-            
+
             <div className="auth-input-group">
               <LockClosedIcon width={20} className="input-icon" />
               <input
@@ -78,9 +76,9 @@ const Login = () => {
                 onChange={onChange}
                 required
               />
-              <button 
-                type="button" 
-                className="password-toggle" 
+              <button
+                type="button"
+                className="password-toggle"
                 onClick={togglePassword}
                 aria-label="Toggle password visibility"
               >
@@ -111,13 +109,12 @@ const Login = () => {
         </div>
       </section>
 
-      {/* Illustration Section */}
       <section className="auth-illustration-section">
         <div className="illustration-glow"></div>
-        <img 
-          src="https://illustrations.popsy.co/amber/success.svg" 
-          alt="Success illustration" 
-          className="floating-illustration" 
+        <img
+          src="https://illustrations.popsy.co/amber/success.svg"
+          alt="Success illustration"
+          className="floating-illustration"
         />
       </section>
     </div>

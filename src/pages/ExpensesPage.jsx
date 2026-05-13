@@ -28,7 +28,7 @@ export async function expensesAction({ request }) {
 const categoryMap = Object.fromEntries(EXPENSE_CATEGORIES);
 
 const ExpensesPage = () => {
-  const { expenses, budgets } = useLoaderData();
+  const { expenses } = useLoaderData();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [sortBy, setSortBy] = useState('date-desc');
@@ -70,7 +70,7 @@ const ExpensesPage = () => {
     filtered = filtered.filter(e => new Date(e.createdAt) >= new Date(dateFrom));
   }
   if (dateTo) {
-    filtered = filtered.filter(e => new Date(e.createdAt) <= new Date(dateTo + 'T23:59:59'));
+    filtered = filtered.filter(e => new Date(e.createdAt) <= new Date(`${dateTo}T23:59:59`));
   }
 
   switch (sortBy) {
@@ -95,8 +95,12 @@ const ExpensesPage = () => {
   const hasActiveFilters = search || minAmount || maxAmount || selectedCategories.length > 0 || dateFrom || dateTo;
 
   const clearAll = () => {
-    setSearch(''); setMinAmount(''); setMaxAmount('');
-    setSelectedCategories([]); setDateFrom(''); setDateTo('');
+    setSearch('');
+    setMinAmount('');
+    setMaxAmount('');
+    setSelectedCategories([]);
+    setDateFrom('');
+    setDateTo('');
   };
 
   const exportCSV = () => {
@@ -121,7 +125,7 @@ const ExpensesPage = () => {
   const exportPDF = () => {
     const printWindow = window.open('', '_blank');
     const rows = filtered.map((e, i) =>
-      `<tr><td>${i + 1}</td><td>${e.name}</td><td>${categoryMap[e.category]?.[0] || '📦'} ${categoryMap[e.category]?.[1] || 'Other'}</td><td>₹${e.amount.toLocaleString()}</td><td>${new Date(e.createdAt).toLocaleDateString()}</td></tr>`
+      `<tr><td>${i + 1}</td><td>${e.name}</td><td>${categoryMap[e.category]?.[0] || '📦'} ${categoryMap[e.category]?.[1] || 'Other'}</td><td>${formatCurrency(e.amount)}</td><td>${new Date(e.createdAt).toLocaleDateString()}</td></tr>`
     ).join('');
     const html = `
       <html><head><title>BudgetBrain Expenses</title>
@@ -135,12 +139,12 @@ const ExpensesPage = () => {
         tr:nth-child(even){background:#f8fafc}
         .total{font-weight:700;font-size:1.1em;margin-top:16px}
       </style></head><body>
-      <h1>BudgetBrain — Expense Report</h1>
-      <p>Generated on ${new Date().toLocaleDateString()} • ${filtered.length} expenses</p>
+      <h1>BudgetBrain - Expense Report</h1>
+      <p>Generated on ${new Date().toLocaleDateString()} - ${filtered.length} expenses</p>
       <table><thead><tr><th>#</th><th>Name</th><th>Category</th><th>Amount</th><th>Date</th></tr></thead><tbody>
       ${rows}
       </tbody></table>
-      <p class="total">Total: ₹${totalFiltered.toLocaleString()}</p>
+      <p class="total">Total: ${formatCurrency(totalFiltered)}</p>
       </body></html>`;
     printWindow.document.write(html);
     printWindow.document.close();
@@ -196,11 +200,11 @@ const ExpensesPage = () => {
         <div className="filter-panel">
           <div className="filter-group">
             <label>Min Amount</label>
-            <input type="number" value={minAmount} onChange={e => setMinAmount(e.target.value)} placeholder="₹0" />
+            <input type="number" value={minAmount} onChange={e => setMinAmount(e.target.value)} placeholder="Rs. 0" />
           </div>
           <div className="filter-group">
             <label>Max Amount</label>
-            <input type="number" value={maxAmount} onChange={e => setMaxAmount(e.target.value)} placeholder="₹99,999" />
+            <input type="number" value={maxAmount} onChange={e => setMaxAmount(e.target.value)} placeholder="Rs. 99,999" />
           </div>
           <div className="filter-group">
             <label><CalendarDaysIcon width={14} style={{ display: 'inline' }} /> From</label>

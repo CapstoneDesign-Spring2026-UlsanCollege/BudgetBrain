@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useLoaderData } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { UserIcon, KeyIcon, EnvelopeIcon, PencilIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import api from '../api';
@@ -17,7 +17,6 @@ export async function profileLoader() {
 
 const Profile = () => {
   const { user } = useLoaderData();
-  const navigate = useNavigate();
   const [name, setName] = useState(user?.name || '');
   const [email] = useState(user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -28,13 +27,12 @@ const Profile = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(name);
 
-  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
-
-  const handleUpdateProfile = async (e) => {
+  const handleUpdateProfile = async (e, nextName = name) => {
     e.preventDefault();
     try {
-      await api.put('/auth/me', { name });
-      localStorage.setItem('userName', JSON.stringify(name));
+      await api.put('/auth/me', { name: nextName });
+      setName(nextName);
+      localStorage.setItem('userName', JSON.stringify(nextName));
       toast.success('Profile updated!');
       setIsEditingName(false);
     } catch {
@@ -60,7 +58,9 @@ const Profile = () => {
     if (newPassword.length < 6) return toast.error('Password must be at least 6 characters');
     try {
       await api.put('/auth/password', { currentPassword, newPassword });
-      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
       toast.success('Password changed!');
     } catch (err) {
       toast.error(err.response?.data?.msg || 'Failed to change password');
@@ -92,13 +92,13 @@ const Profile = () => {
                 className="profile-name-input"
                 autoFocus
               />
-              <button className="btn-icon" onClick={() => { setName(editName); handleUpdateProfile({ preventDefault: () => {} }); }}>
+              <button className="btn-icon" onClick={() => handleUpdateProfile({ preventDefault: () => {} }, editName)}>
                 <CheckCircleIcon width={20} style={{ color: 'hsl(var(--success))' }} />
               </button>
             </div>
           ) : (
             <div className="profile-name-display">
-              <h2>{user?.name}</h2>
+              <h2>{name || user?.name}</h2>
               <button className="btn-icon" onClick={() => { setEditName(name); setIsEditingName(true); }}>
                 <PencilIcon width={16} style={{ color: 'hsl(var(--muted))' }} />
               </button>

@@ -1,13 +1,7 @@
-// react imports
 import { useEffect, useRef } from "react";
-
-// rrd imports
 import { useFetcher } from "react-router-dom";
-
-// library imports
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
 
-// List of tuples for expense categories: [key, [icon, label]]
 export const EXPENSE_CATEGORIES = [
   ['food', ['🍔', 'Food & Dining']],
   ['transport', ['🚗', 'Transportation']],
@@ -25,16 +19,12 @@ export const EXPENSE_CATEGORIES = [
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
-
-  // These refs will be used to interact with the form and focus on specific input elements.
   const formRef = useRef();
   const focusRef = useRef();
 
   useEffect(() => {
-    if (!isSubmitting) {
-      // clear form
+    if (!isSubmitting && formRef.current && focusRef.current) {
       formRef.current.reset();
-      // reset focus
       focusRef.current.focus();
     }
   }, [isSubmitting]);
@@ -70,7 +60,7 @@ const AddExpenseForm = ({ budgets }) => {
                 inputMode="decimal"
                 name="newExpenseAmount"
                 id="newExpenseAmount"
-                placeholder="e.g., ₹9000"
+                placeholder="e.g., Rs. 9000"
                 required
               />
             </div>
@@ -89,13 +79,11 @@ const AddExpenseForm = ({ budgets }) => {
               <select name="newExpenseBudget" id="newExpenseBudget" required>
                 {budgets
                   .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-                  .map((budget) => {
-                    return (
-                      <option key={budget.id || budget._id} value={budget.id || budget._id}>
-                        {budget.name}
-                      </option>
-                    );
-                  })}
+                  .map((budget) => (
+                    <option key={budget.id || budget._id} value={budget.id || budget._id}>
+                      {budget.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -103,7 +91,7 @@ const AddExpenseForm = ({ budgets }) => {
         <input type="hidden" name="_action" value="createExpense" />
         <button type="submit" className="btn btn--dark" disabled={isSubmitting}>
           {isSubmitting ? (
-            <span>Submitting…</span>
+            <span>Submitting...</span>
           ) : (
             <>
               <span>Add Expense</span>
@@ -115,4 +103,5 @@ const AddExpenseForm = ({ budgets }) => {
     </div>
   );
 };
-export default AddExpenseForm;
+
+export default AddExpenseForm;

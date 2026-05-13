@@ -23,8 +23,6 @@ const Goals = () => {
   const [goals, setGoals] = useState(initialGoals);
   const [showForm, setShowForm] = useState(false);
   const [addAmounts, setAddAmounts] = useState({});
-
-  // Form state
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -37,7 +35,10 @@ const Goals = () => {
         name, targetAmount: +target, deadline: deadline || null, icon,
       });
       setGoals([res.data, ...goals]);
-      setName(''); setTarget(''); setDeadline(''); setIcon('🎯');
+      setName('');
+      setTarget('');
+      setDeadline('');
+      setIcon('🎯');
       setShowForm(false);
       toast.success('Goal created!');
     } catch {
@@ -87,7 +88,6 @@ const Goals = () => {
         </button>
       </div>
 
-      {/* Stats */}
       <div className="analytics-stats">
         <div className="stat-card">
           <span className="stat-label">Total Target</span>
@@ -109,7 +109,6 @@ const Goals = () => {
         </div>
       </div>
 
-      {/* Create Form */}
       {showForm && (
         <form onSubmit={handleCreate} className="goal-form">
           <div className="goal-form-grid">
@@ -134,7 +133,7 @@ const Goals = () => {
             </div>
             <div className="grid-xs">
               <label>Target Amount</label>
-              <input type="number" value={target} onChange={e => setTarget(e.target.value)} placeholder="₹50,000" required />
+              <input type="number" value={target} onChange={e => setTarget(e.target.value)} placeholder="Rs. 50,000" required />
             </div>
             <div className="grid-xs">
               <label>Deadline (optional)</label>
@@ -147,7 +146,6 @@ const Goals = () => {
         </form>
       )}
 
-      {/* Goals Grid */}
       {goals.length > 0 ? (
         <div className="goals-grid">
           {goals.map(goal => {
@@ -194,7 +192,7 @@ const Goals = () => {
                 <div className="goal-add-savings">
                   <input
                     type="number"
-                    placeholder="Add ₹..."
+                    placeholder="Add Rs..."
                     value={addAmounts[goal._id] || ''}
                     onChange={e => setAddAmounts({ ...addAmounts, [goal._id]: e.target.value })}
                   />
