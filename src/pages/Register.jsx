@@ -13,6 +13,11 @@ import {
 import api from '../api';
 import './Auth.css';
 
+const getAuthErrorMessage = (err) =>
+  err.response?.data?.msg ||
+  err.response?.data?.error ||
+  'Registration failed. Please try again.';
+
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -43,7 +48,7 @@ const Register = () => {
       toast.success('Registration successful! Please log in.');
       navigate('/login');
     } catch (err) {
-      toast.error(err.response?.data?.msg || 'Registration failed. Please try again.');
+      toast.error(getAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

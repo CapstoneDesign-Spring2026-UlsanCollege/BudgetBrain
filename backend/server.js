@@ -3,12 +3,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+mongoose.set('bufferCommands', false);
+
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budgets');
 const expenseRoutes = require('./routes/expenses');
 const goalRoutes = require('./routes/goals');
 
 const app = express();
+let connectionPromise = null;
 
 app.use(cors());
 app.use(express.json());
@@ -35,15 +38,32 @@ function validateConfig() {
 }
 
 async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
+  if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+    try {
+      await mongoose.connection.db.admin().command({ ping: 1 });
+      return;
+    } catch (err) {
+      console.warn('MongoDB ping failed, reconnecting:', err.message);
+      connectionPromise = null;
+      await mongoose.disconnect();
+    }
+  }
+  if (mongoose.connection.readyState === 2 && connectionPromise) {
+    await connectionPromise;
+    return;
+  }
   if (!process.env.MONGO_URI) {
     console.warn('No MONGO_URI set - running without database. API requests requiring the database will fail.');
     return;
   }
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    connectionPromise = mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    await connectionPromise;
     console.log('MongoDB connected successfully.');
   } catch (err) {
+    connectionPromise = null;
     console.error('MongoDB connection failed:', err.message);
     throw err;
   }

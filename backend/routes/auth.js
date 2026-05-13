@@ -12,6 +12,15 @@ function signToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 });
 }
 
+function sendAuthServerError(res, err) {
+  const isDatabaseError = err.name?.includes('Mongoose') || err.name?.includes('Mongo') || /buffering timed out|database|mongo/i.test(err.message);
+  res.status(isDatabaseError ? 503 : 500).json({
+    msg: isDatabaseError
+      ? 'Database connection failed. Please try again shortly.'
+      : 'Server Error'
+  });
+}
+
 // @route   POST api/auth/register
 // @desc    Register user
 // @access  Public
@@ -46,7 +55,7 @@ router.post('/register', async (req, res) => {
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendAuthServerError(res, err);
   }
 });
 
@@ -79,7 +88,7 @@ router.post('/login', async (req, res) => {
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendAuthServerError(res, err);
   }
 });
 

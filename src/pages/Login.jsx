@@ -12,6 +12,11 @@ import {
 import api from '../api';
 import './Auth.css';
 
+const getAuthErrorMessage = (err) =>
+  err.response?.data?.msg ||
+  err.response?.data?.error ||
+  'Login failed. Please try again.';
+
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -38,7 +43,7 @@ const Login = () => {
       toast.success(`Welcome back, ${user.name}!`);
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+      toast.error(getAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
