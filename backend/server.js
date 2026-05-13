@@ -21,6 +21,7 @@ app.use('/api/goals', goalRoutes);
 const PORT = process.env.PORT || 5000;
 
 async function connectDB() {
+  if (mongoose.connection.readyState === 1) return;
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected successfully!');
@@ -35,15 +36,19 @@ async function connectDB() {
       console.log('In-memory MongoDB connected!');
     } catch (memErr) {
       console.error('Failed to start in-memory MongoDB:', memErr.message);
-      process.exit(1);
+      if (require.main === module) process.exit(1);
     }
   }
 }
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+if (require.main === module) {
+  connectDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   });
-});
+}
 
 app.get('/', (req, res) => res.send('BudgetBrain API is running'));
+
+module.exports = { app, connectDB };
