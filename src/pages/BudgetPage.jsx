@@ -136,7 +136,7 @@ const BudgetPage = () => {
         </span>
       </h1>
       <div className="flex-lg">
-        <BudgetItem budget={budget} showDelete={true} />
+        <BudgetItem budget={budget} expenses={expenses} showDelete={true} />
         <AddExpenseForm budgets={[budget]} />
       </div>
       {expenses && expenses.length > 0 && (

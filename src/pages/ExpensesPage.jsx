@@ -8,8 +8,7 @@ import { EXPENSE_CATEGORIES } from "../components/AddExpenseForm";
 
 export async function expensesLoader() {
   const expenses = await fetchData("expenses");
-  const budgets = await fetchData("budgets");
-  return { expenses, budgets };
+  return { expenses };
 }
 
 export async function expensesAction({ request }) {

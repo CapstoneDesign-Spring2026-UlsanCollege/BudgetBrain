@@ -35,6 +35,7 @@ const router = createBrowserRouter([
   { path: "/register", element: <Register />, errorElement: <Error /> },
   {
     path: "/",
+    id: "main",
     element: <Main />,
     loader: mainLoader,
     errorElement: <Error />,

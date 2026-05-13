@@ -12,6 +12,7 @@ const goalRoutes = require('./routes/goals');
 
 const app = express();
 let connectionPromise = null;
+let lastConnectionCheck = 0;
 
 app.use(cors());
 app.use(express.json());
@@ -39,8 +40,10 @@ function validateConfig() {
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+    if (Date.now() - lastConnectionCheck < 60000) return;
     try {
       await mongoose.connection.db.admin().command({ ping: 1 });
+      lastConnectionCheck = Date.now();
       return;
     } catch (err) {
       console.warn('MongoDB ping failed, reconnecting:', err.message);
@@ -61,6 +64,7 @@ async function connectDB() {
       serverSelectionTimeoutMS: 10000,
     });
     await connectionPromise;
+    lastConnectionCheck = Date.now();
     console.log('MongoDB connected successfully.');
   } catch (err) {
     connectionPromise = null;

@@ -1,6 +1,6 @@
 import { useLoaderData, Link } from 'react-router-dom';
 import { WalletIcon } from '@heroicons/react/24/solid';
-import { fetchData, formatCurrency } from '../helpers';
+import { fetchData } from '../helpers';
 import BudgetItem from '../components/BudgetItem';
 
 export async function budgetsListLoader() {
@@ -10,7 +10,7 @@ export async function budgetsListLoader() {
 }
 
 const BudgetsList = () => {
-  const { budgets } = useLoaderData();
+  const { budgets, expenses } = useLoaderData();
 
   return (
     <div className="grid-lg" style={{ width: '100%' }}>
@@ -21,7 +21,7 @@ const BudgetsList = () => {
       {budgets && budgets.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
           {budgets.map((budget) => (
-            <BudgetItem key={budget.id} budget={budget} />
+            <BudgetItem key={budget.id} budget={budget} expenses={expenses} />
           ))}
         </div>
       ) : (

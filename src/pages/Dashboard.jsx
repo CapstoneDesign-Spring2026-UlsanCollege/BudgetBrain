@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, useLoaderData, useRouteLoaderData } from "react-router-dom";
 import { toast } from "react-toastify";
 import { WalletIcon, ArrowTrendingDownIcon, ChartBarIcon, DocumentTextIcon, CircleStackIcon, TrophyIcon } from "@heroicons/react/24/solid";
 
@@ -20,15 +20,12 @@ import {
 import api from "../api";
 
 export async function dashboardLoader() {
-  const userName = await fetchData("userName");
-  const budgets = await fetchData("budgets");
-  const expenses = await fetchData("expenses");
   let goals = [];
   try {
     const res = await api.get('/goals');
     goals = res.data;
   } catch {}
-  return { userName, budgets, expenses, goals };
+  return { goals };
 }
 
 // action
@@ -76,7 +73,8 @@ export async function dashboardAction({ request }) {
 }
 
 const Dashboard = () => {
-  const { userName, budgets, expenses, goals } = useLoaderData();
+  const { goals } = useLoaderData();
+  const { userName, budgets, expenses } = useRouteLoaderData("main");
 
   const totalBudget = budgets ? budgets.reduce((acc, b) => acc + b.amount, 0) : 0;
   const totalSpent = expenses ? expenses.reduce((acc, e) => acc + e.amount, 0) : 0;
@@ -226,7 +224,7 @@ const Dashboard = () => {
               <h3 className="section-title" style={{ marginTop: '1rem' }}>Detailed Budget Breakdown</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
                 {budgets.map((budget) => (
-                  <BudgetItem key={budget.id} budget={budget} />
+                  <BudgetItem key={budget.id} budget={budget} expenses={expenses} />
                 ))}
               </div>
             </section>
