@@ -22,22 +22,16 @@ const PORT = process.env.PORT || 5000;
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
+  if (!process.env.MONGO_URI) {
+    console.log('No MONGO_URI set — running without database');
+    return;
+  }
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected successfully!');
   } catch (err) {
-    console.log('MongoDB Atlas connection failed:', err.message);
-    console.log('Starting in-memory MongoDB...');
-    try {
-      const { MongoMemoryServer } = require('mongodb-memory-server');
-      const mongod = await MongoMemoryServer.create();
-      const uri = mongod.getUri();
-      await mongoose.connect(uri);
-      console.log('In-memory MongoDB connected!');
-    } catch (memErr) {
-      console.error('Failed to start in-memory MongoDB:', memErr.message);
-      if (require.main === module) process.exit(1);
-    }
+    console.error('MongoDB connection failed:', err.message);
+    console.log('Running without database — API requests requiring DB will return errors');
   }
 }
 
