@@ -2,27 +2,55 @@
 
 This folder contains all project documentation for the BudgetBrain capstone project.
 
-## Contents
+## Core Documents
 
 | File | Description |
 |---|---|
 | [PROJECT.md](PROJECT.md) | Project overview, timeline, and tech stack |
 | [TEAM_AGREEMENT.md](TEAM_AGREEMENT.md) | Team rules, communication, and workflow |
 | [DESIGN_DOC_V1.md](DESIGN_DOC_V1.md) | Design decisions and UI/UX principles |
-| [ARCHITECTURE_SKETCH.md](ARCHITECTURE_SKETCH.md) | System architecture and data flow |
+| [ARCHITECTURE_SKETCH.md](ARCHITECTURE_SKETCH.md) | System architecture, data flow, API endpoints |
 | [user_stories.md](user_stories.md) | User stories for all features |
 | [WIREFRAMES.md](WIREFRAMES.md) | Page layout wireframes |
 | [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md) | Evidence of project work |
-| [weeks/](weeks/) | Weekly progress reports (Week 1-9) |
 
 ## Weekly Reports
 
-- [Week 1 - Project Idea and Team Setup](weeks/week1.md)
-- [Week 2 - Requirements Planning](weeks/week2.md)
-- [Week 3 - Repository and Basic Structure](weeks/week3.md)
-- [Week 4 - UI Planning and Wireframes](weeks/week4.md)
-- [Week 5 - Frontend Basic Pages](weeks/week5.md)
-- [Week 6 - Backend and API Setup](weeks/week6.md)
-- [Week 7 - Budget and Expense Features](weeks/week7.md)
-- [Week 8 - Midterm Preparation and Documentation](weeks/week8.md)
-- [Week 9 - Improvement and Stabilization](weeks/week9.md)
+| Week | File |
+|---|---|
+| Week 1 - Project Idea and Team Setup | [weeks/week1.md](weeks/week1.md) |
+| Week 2 - Requirements Planning | [weeks/week2.md](weeks/week2.md) |
+| Week 3 - Repository and Basic Structure | [weeks/week3.md](weeks/week3.md) |
+| Week 4 - UI Planning and Wireframes | [weeks/week4.md](weeks/week4.md) |
+| Week 5 - Frontend Basic Pages | [weeks/week5.md](weeks/week5.md) |
+| Week 6 - Backend and API Setup | [weeks/week6.md](weeks/week6.md) |
+| Week 7 - Budget and Expense Features | [weeks/week7.md](weeks/week7.md) |
+| Week 8 - Midterm Preparation and Documentation | [weeks/week8.md](weeks/week8.md) |
+| Week 9 - Improvement and Stabilization | [weeks/week9.md](weeks/week9.md) |
+
+## Sprint Packets
+
+Original sprint documentation from development:
+
+| File | Description |
+|---|---|
+| [sprint-packets/overview.md](sprint-packets/overview.md) | Sprint process overview |
+| [sprint-packets/sprint-2.md](sprint-packets/sprint-2.md) | Sprint 2 summary (auth + budget CRUD) |
+| [sprint-packets/week1.md](sprint-packets/week1.md) | Week 1 sprint packet |
+| [sprint-packets/week2.md](sprint-packets/week2.md) | Week 2 sprint packet |
+| [sprint-packets/week3.md](sprint-packets/week3.md) | Week 3 sprint packet |
+| [sprint-packets/week4.md](sprint-packets/week4.md) | Week 4 sprint packet |
+| [sprint-packets/week5.md](sprint-packets/week5.md) | Week 5 sprint packet |
+| [sprint-packets/week6.md](sprint-packets/week6.md) | Week 6 sprint packet |
+
+## Reference Documents
+
+| File | Description |
+|---|---|
+| [references/pitch-issue.md](references/pitch-issue.md) | Project pitch and problem statement |
+| [references/ai-code-ownership-audit.md](references/ai-code-ownership-audit.md) | AI-generated code tracking |
+| [references/questions.md](references/questions.md) | Architecture and feature questions |
+| [references/risks-and-blockers.md](references/risks-and-blockers.md) | Project risks and mitigation |
+| [references/retro-issue.md](references/retro-issue.md) | Sprint retrospective |
+| [references/system-architecture.md](references/system-architecture.md) | System architecture diagram |
+| [references/pull-request-template.md](references/pull-request-template.md) | PR template reference |
