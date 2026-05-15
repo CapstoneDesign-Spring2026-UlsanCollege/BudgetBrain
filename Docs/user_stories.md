@@ -17,6 +17,7 @@
 - As a user, I want to see all my expenses in a list so I can review them
 - As a user, I want to edit expense amounts so I can correct mistakes
 - As a user, I want to delete expenses I added by mistake
+- As a user, I want to see how much I spent vs my budget
 
 ## Savings Goals
 - As a user, I want to create savings goals so I can save for specific items
@@ -26,10 +27,10 @@
 
 ## Analytics
 - As a user, I want to see spending charts so I understand my habits
-- As a user, I want to see budget vs actual so I know if I'm overspending
+- As a user, I want to see budget vs actual so I know if I overspend
 - As a user, I want to see monthly trends so I can compare periods
 
-## Settings
+## Settings and Profile
 - As a user, I want to switch between dark and light themes
 - As a user, I want to choose my currency so amounts display correctly
 - As a user, I want to select an avatar for my profile
