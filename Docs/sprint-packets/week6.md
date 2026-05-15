@@ -1,7 +1,7 @@
 # Weekly Sprint Packet - Week 6
 
 ## Date
-April 6_jlj10, 2026
+April 6-10, 2026
 
 ##Focus
 Final polish, testing, and deployment preparation.
