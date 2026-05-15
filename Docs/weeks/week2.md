@@ -43,3 +43,13 @@ We spent this week figuring out exactly what features BudgetBrain should have. W
 ## What is Next
 
 Set up the repo structure and scaffolding in Week 3.
+
+## Detailed Notes
+
+We spent a lot of time discussing what features to include and what to leave out. The main question was how detailed the expense tracking should be. We decided to keep it simple: each expense belongs to a budget category, has a name, amount, and date. No receipt scanning or tags for now.
+
+The registration flow was a topic of debate. Some wanted auto-login after registration. We decided against it because it is better UX to let users verify their credentials by logging in manually.
+
+The default currency is NPR because most of the team is from Nepal and the app is targeted at Nepali students. But we made it configurable in Settings.
+
+The team agreement was important to set expectations. We agreed to daily standups, GitHub Issues for tracking, and no direct pushes to main. We also agreed to use Discord for quick questions and weekly check-ins on Friday.
