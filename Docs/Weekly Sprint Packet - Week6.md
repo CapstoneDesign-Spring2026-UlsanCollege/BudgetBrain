@@ -4,7 +4,7 @@
 April 6-10, 2026
 
 ## Focus
-Final polish, testing, and deployment preparation.
+Final polish,testing, and deployment preparation.
 
 ## Goals
 - [x] 3D and liquid visual effects
