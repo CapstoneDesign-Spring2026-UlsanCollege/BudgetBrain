@@ -14,6 +14,25 @@ This folder contains all project documentation for the BudgetBrain capstone proj
 | [WIREFRAMES.md](WIREFRAMES.md) | Page layout wireframes |
 | [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md) | Evidence of project work |
 
+## Reference Guides
+
+| File | Description |
+|---|---|
+| [API.md](API.md) | Full API reference with request/response examples |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Vercel deployment guide and setup |
+| [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [FAQ.md](FAQ.md) | Frequently asked questions |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute to the project |
+| [DATABASE.md](DATABASE.md) | MongoDB schema and model documentation |
+| [COMPONENTS.md](COMPONENTS.md) | Frontend component reference |
+| [USER_GUIDE.md](USER_GUIDE.md) | End user manual and instructions |
+| [ROADMAP.md](ROADMAP.md) | Future plans and feature ideas |
+| [TESTING.md](TESTING.md) | Testing checklist and strategy |
+| [PERFORMANCE.md](PERFORMANCE.md) | Performance notes and build info |
+| [SECURITY.md](SECURITY.md) | Security practices and auth details |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues and solutions |
+| [MEETING_NOTES.md](MEETING_NOTES.md) | Meeting logs and decisions |
+
 ## Weekly Reports
 
 | Week | File |
