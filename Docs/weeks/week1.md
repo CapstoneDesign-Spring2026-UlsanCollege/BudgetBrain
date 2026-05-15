@@ -33,3 +33,13 @@ The main reason we chose this idea is because many students including ourselves 
 ## What is Next
 
 Start working on requirements and user stories in Week 2.
+
+## Detailed Notes
+
+We spent the first few days discussing different project ideas. Some ideas were a campus marketplace, a study group finder, and a meal planner. We chose BudgetBrain because budgeting is a real problem for international students managing living expenses in a new country.
+
+The team agreed that the app should be simple and focused. We did not want to build something too complex that would be hard to finish in one semester.
+
+We also decided to keep the tech stack simple. React because the team knows it from previous courses. Express and MongoDB because it is a common stack that is well documented. No TypeScript to keep things simple. No CSS frameworks because we wanted full control over the design.
+
+The GitHub repo was created under the Ulsan College organization. We set up branch protection rules to prevent direct pushes to main.
