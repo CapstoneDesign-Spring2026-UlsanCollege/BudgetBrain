@@ -28,6 +28,5 @@ Final polish, testing, and deployment preparation.
 ## Blockers
 - GitHub Pages may be disabled at organization level
 - Backend deployment pending Railway setup
-
 ## Notes
 All features complete. Frontend builds with 0 errors. Ready for final deployment.
