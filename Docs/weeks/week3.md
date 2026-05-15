@@ -42,3 +42,13 @@ BudgetBrain/
 ## What is Next
 
 Design wireframes and plan the UI in Week 4.
+
+## Detailed Notes
+
+Setting up the project structure took longer than expected because we had to make sure everything worked together. The Vite setup was straightforward. The Express backend needed some configuration for ES modules since we used "type": "module" in package.json.
+
+We created the folder structure with separate directories for frontend and backend code. The Docs folder was created to hold all documentation. We set up the .gitignore file to exclude node_modules, .env, and build output.
+
+Git workflow was established. We decided on branch naming: feature/feature-name and fix/bug-name. Each feature gets its own branch. PRs are required before merging to main.
+
+All team members got the dev environment working. We tested that the Vite dev server starts, the Express server starts, and the MongoDB connection works. The proxy config in vite.config.js was set up to forward /api requests to the backend.
