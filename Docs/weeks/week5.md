@@ -40,3 +40,15 @@ We built the basic frontend pages this week. We created all the main pages using
 ## What is Next
 
 Set up the backend API in Week 6.
+
+## Detailed Notes
+
+We built all the frontend pages with hardcoded data first. This let us focus on the UI without worrying about the backend. The pages look and feel like the final product, just without real data.
+
+The Login and Register pages have form validation. The Dashboard shows summary cards with dummy numbers. Budget cards have progress bars that show how much has been spent. We used placeholder colors for demonstration.
+
+The theme toggle was implemented this week. It uses React Context to manage the theme state and applies CSS variable changes. The toggle button is in both the Navbar and Settings page.
+
+The 3D card effects and hover animations were also added this week. These are done with CSS transforms and transitions. The effects make the budget cards look like they are floating above the page.
+
+We used Heroicons for all icons in the app. They look clean and are easy to use with React.
