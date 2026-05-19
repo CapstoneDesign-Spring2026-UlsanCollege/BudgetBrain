@@ -242,6 +242,59 @@
   width: 100%;
 }
 
+.currency-dashboard-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+}
+
+.currency-dashboard-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.currency-kicker {
+  color: hsl(var(--accent));
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.currency-dashboard-copy strong {
+  font-size: 1.1rem;
+  color: hsl(var(--text));
+}
+
+.currency-dashboard-copy small {
+  color: hsl(var(--muted));
+}
+
+.currency-dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.currency-dashboard-select {
+  min-width: 230px;
+}
+
+.currency-refresh-btn {
+  white-space: nowrap;
+}
+
 .section-title {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -324,6 +377,16 @@
   }
   .top-navbar, .welcome-banner, .dashboard-content {
     padding: 2rem;
+  }
+  .currency-dashboard-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .currency-dashboard-controls {
+    justify-content: flex-start;
+  }
+  .currency-dashboard-select {
+    min-width: 100%;
   }
 }
 

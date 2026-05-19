@@ -10,6 +10,7 @@ import AddExpenseForm from "../components/AddExpenseForm";
 import BudgetItem from "../components/BudgetItem";
 import Table from "../components/Table";
 import LoadingSpinner from "../components/LoadingSpinner";
+import CurrencyRateWidget from "../components/CurrencyRateWidget";
 
 import {
   createBudget,
@@ -90,6 +91,8 @@ const Dashboard = () => {
       <WelcomeBanner userName={userName} />
 
       <div className="dashboard-content">
+        <CurrencyRateWidget />
+
         {budgets && budgets.length > 0 ? (
           <>
             {/* Section 1: Top Level Summaries */}
