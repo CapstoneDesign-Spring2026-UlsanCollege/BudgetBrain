@@ -28,7 +28,7 @@ BudgetBrain is a full-stack budget planning web app built with React and Express
 
 ## Live Demo
 
-https://budget-brain-puce.vercel.app
+https://budgetbrain.vercel.app/
 
 ## Installation
 
