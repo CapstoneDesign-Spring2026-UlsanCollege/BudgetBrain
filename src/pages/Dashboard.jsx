@@ -88,10 +88,10 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="dashboard-top-tools">
+      <WelcomeBanner userName={userName} />
+      <div className="dashboard-top-tools" style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
         <CurrencyRateWidget />
       </div>
-      <WelcomeBanner userName={userName} />
 
       <div className="dashboard-content">
         {budgets && budgets.length > 0 ? (
