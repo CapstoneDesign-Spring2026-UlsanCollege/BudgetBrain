@@ -54,6 +54,9 @@ https://budgetbrain.vercel.app/
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_strong_jwt_secret
    PORT=5000
+   # Optional: override the live exchange-rate provider URL.
+   # Use {base} where the base currency code should be inserted.
+   EXCHANGE_RATE_API_URL=https://open.er-api.com/v6/latest/{base}
    ```
 
 ## Usage
@@ -74,6 +77,7 @@ https://budgetbrain.vercel.app/
 ## Deployment
 
 Deployed on Vercel. Required env vars: `MONGO_URI`, `JWT_SECRET`.
+Optional env var: `EXCHANGE_RATE_API_URL` for overriding the live currency provider.
 
 Build: `npm run build`  
 Output: `dist`

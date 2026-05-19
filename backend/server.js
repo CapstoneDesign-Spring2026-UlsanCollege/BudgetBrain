@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budgets');
 const expenseRoutes = require('./routes/expenses');
 const goalRoutes = require('./routes/goals');
+const exchangeRoutes = require('./routes/exchange');
 
 const app = express();
 let connectionPromise = null;
@@ -51,6 +52,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/exchange', exchangeRoutes);
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);

@@ -1,5 +1,19 @@
 import api from './api';
 
+export const BASE_CURRENCY = 'NPR';
+export const SUPPORTED_CURRENCIES = [
+  ['NPR', 'Rs. NPR - Nepali Rupee'],
+  ['USD', '$ USD - US Dollar'],
+  ['EUR', 'EUR - Euro'],
+  ['GBP', 'GBP - British Pound'],
+  ['JPY', 'JPY - Japanese Yen'],
+  ['CAD', '$ CAD - Canadian Dollar'],
+  ['AUD', '$ AUD - Australian Dollar'],
+  ['SGD', '$ SGD - Singapore Dollar'],
+  ['KRW', 'KRW - South Korean Won'],
+  ['INR', 'INR - Indian Rupee'],
+];
+
 export const waait = () =>
   new Promise((res) => setTimeout(res, Math.random() * 800));
 
@@ -93,15 +107,62 @@ export const formatPercentage = (amt) => {
   });
 };
 
-export const formatCurrency = (amt) => {
-  let currency;
+export const getSelectedCurrency = () => {
   try {
-    currency = localStorage.getItem('budgetbrain-currency') || 'NPR';
+    return localStorage.getItem('budgetbrain-currency') || BASE_CURRENCY;
   } catch {
-    currency = 'NPR';
+    return BASE_CURRENCY;
   }
+};
+
+export const getExchangeRate = () => {
+  try {
+    const rate = Number(localStorage.getItem('budgetbrain-exchange-rate'));
+    return Number.isFinite(rate) && rate > 0 ? rate : 1;
+  } catch {
+    return 1;
+  }
+};
+
+export const refreshExchangeRate = async (currency = getSelectedCurrency()) => {
+  const targetCurrency = currency || BASE_CURRENCY;
+
+  if (targetCurrency === BASE_CURRENCY) {
+    localStorage.setItem('budgetbrain-currency', BASE_CURRENCY);
+    localStorage.setItem('budgetbrain-exchange-rate', '1');
+    localStorage.setItem('budgetbrain-exchange-updated', new Date().toISOString());
+    localStorage.setItem('budgetbrain-exchange-provider', 'Local identity conversion');
+    window.dispatchEvent(new Event('budgetbrain-currency-change'));
+    return {
+      from: BASE_CURRENCY,
+      to: BASE_CURRENCY,
+      rate: 1,
+      cached: true,
+      provider: 'Local identity conversion',
+      fetchedAt: Date.now(),
+    };
+  }
+
+  const res = await api.get('/exchange/rate', {
+    params: { from: BASE_CURRENCY, to: targetCurrency },
+  });
+  const payload = res.data;
+
+  localStorage.setItem('budgetbrain-currency', payload.to);
+  localStorage.setItem('budgetbrain-exchange-rate', String(payload.rate));
+  localStorage.setItem('budgetbrain-exchange-updated', new Date(payload.fetchedAt || Date.now()).toISOString());
+  localStorage.setItem('budgetbrain-exchange-provider', payload.provider || 'Exchange rate provider');
+  if (payload.providerUrl) localStorage.setItem('budgetbrain-exchange-provider-url', payload.providerUrl);
+  window.dispatchEvent(new Event('budgetbrain-currency-change'));
+
+  return payload;
+};
+
+export const formatCurrency = (amt) => {
+  const currency = getSelectedCurrency();
   const amount = Number.isFinite(Number(amt)) ? Number(amt) : 0;
-  return amount.toLocaleString(undefined, {
+  const convertedAmount = amount * getExchangeRate();
+  return convertedAmount.toLocaleString(undefined, {
     style: "currency",
     currency,
   });

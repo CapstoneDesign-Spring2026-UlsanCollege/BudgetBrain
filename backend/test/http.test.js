@@ -10,6 +10,7 @@ const {
   parseOptionalDate,
   parsePositiveNumber,
 } = require('../utils/http');
+const exchange = require('../routes/exchange');
 
 function mockResponse() {
   return {
@@ -37,6 +38,16 @@ test('normalizes and validates common request values', () => {
   assert.equal(isValidColor('210 65% 50%'), true);
   assert.equal(isValidColor('#8b5cf6'), true);
   assert.equal(isValidColor('purple'), false);
+});
+
+test('validates supported exchange currencies', () => {
+  const { normalizeCurrency, isSupportedCurrency, SUPPORTED_CURRENCIES } = exchange._internals;
+
+  assert.equal(normalizeCurrency(' usd '), 'USD');
+  assert.equal(isSupportedCurrency('NPR'), true);
+  assert.equal(isSupportedCurrency('USD'), true);
+  assert.equal(isSupportedCurrency('DOGE'), false);
+  assert.equal(SUPPORTED_CURRENCIES.includes('KRW'), true);
 });
 
 test('auth middleware accepts Authorization bearer tokens', () => {

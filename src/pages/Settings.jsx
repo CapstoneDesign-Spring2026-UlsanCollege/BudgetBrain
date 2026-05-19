@@ -7,10 +7,21 @@ import {
   BellIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/solid';
+import {
+  BASE_CURRENCY,
+  SUPPORTED_CURRENCIES,
+  getExchangeRate,
+  refreshExchangeRate,
+} from '../helpers';
 
 const Settings = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
-  const [currency, setCurrency] = useState(localStorage.getItem('budgetbrain-currency') || 'NPR');
+  const [currency, setCurrency] = useState(localStorage.getItem('budgetbrain-currency') || BASE_CURRENCY);
+  const [exchangeRate, setExchangeRate] = useState(getExchangeRate());
+  const [exchangeUpdated, setExchangeUpdated] = useState(localStorage.getItem('budgetbrain-exchange-updated'));
+  const [exchangeProvider, setExchangeProvider] = useState(localStorage.getItem('budgetbrain-exchange-provider'));
+  const [exchangeProviderUrl, setExchangeProviderUrl] = useState(localStorage.getItem('budgetbrain-exchange-provider-url'));
+  const [isRefreshingRate, setIsRefreshingRate] = useState(false);
   const [notifications, setNotifications] = useState(
     localStorage.getItem('budgetbrain-notifications') !== 'false'
   );
@@ -21,6 +32,19 @@ const Settings = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('budgetbrain-theme');
     if (savedTheme === 'light') setIsDarkTheme(false);
+
+    setIsRefreshingRate(true);
+    refreshExchangeRate(currency)
+      .then((payload) => {
+        setExchangeRate(payload.rate);
+        setExchangeUpdated(localStorage.getItem('budgetbrain-exchange-updated'));
+        setExchangeProvider(payload.provider);
+        setExchangeProviderUrl(payload.providerUrl || localStorage.getItem('budgetbrain-exchange-provider-url'));
+      })
+      .catch((err) => {
+        toast.error(err.userMessage || 'Could not refresh exchange rate');
+      })
+      .finally(() => setIsRefreshingRate(false));
   }, []);
 
   const handleThemeToggle = () => {
@@ -38,11 +62,40 @@ const Settings = () => {
     toast.success(`Theme switched to ${isDarkTheme ? 'light' : 'dark'} mode`);
   };
 
-  const handleCurrencyChange = (e) => {
+  const handleCurrencyChange = async (e) => {
     const val = e.target.value;
     setCurrency(val);
-    localStorage.setItem('budgetbrain-currency', val);
-    toast.success(`Currency set to ${val}`);
+    setIsRefreshingRate(true);
+
+    try {
+      const payload = await refreshExchangeRate(val);
+      setExchangeRate(payload.rate);
+      setExchangeUpdated(localStorage.getItem('budgetbrain-exchange-updated'));
+      setExchangeProvider(payload.provider);
+      setExchangeProviderUrl(payload.providerUrl || localStorage.getItem('budgetbrain-exchange-provider-url'));
+      toast.success(`Currency set to ${val} with live exchange rate`);
+    } catch (err) {
+      setCurrency(localStorage.getItem('budgetbrain-currency') || BASE_CURRENCY);
+      toast.error(err.userMessage || 'Could not update exchange rate');
+    } finally {
+      setIsRefreshingRate(false);
+    }
+  };
+
+  const handleRefreshRate = async () => {
+    setIsRefreshingRate(true);
+    try {
+      const payload = await refreshExchangeRate(currency);
+      setExchangeRate(payload.rate);
+      setExchangeUpdated(localStorage.getItem('budgetbrain-exchange-updated'));
+      setExchangeProvider(payload.provider);
+      setExchangeProviderUrl(payload.providerUrl || localStorage.getItem('budgetbrain-exchange-provider-url'));
+      toast.success('Exchange rate refreshed');
+    } catch (err) {
+      toast.error(err.userMessage || 'Could not refresh exchange rate');
+    } finally {
+      setIsRefreshingRate(false);
+    }
   };
 
   const handleNotificationsToggle = () => {
@@ -86,16 +139,34 @@ const Settings = () => {
             <strong>Display Currency</strong>
             <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Currency used for all financial values</p>
           </div>
-          <select value={currency} onChange={handleCurrencyChange} className="settings-select">
-            <option value="NPR">Rs. NPR - Nepali Rupee</option>
-            <option value="USD">$ USD - US Dollar</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="GBP">GBP - British Pound</option>
-            <option value="JPY">JPY - Japanese Yen</option>
-            <option value="CAD">$ CAD - Canadian Dollar</option>
-            <option value="AUD">$ AUD - Australian Dollar</option>
-            <option value="SGD">$ SGD - Singapore Dollar</option>
+          <select value={currency} onChange={handleCurrencyChange} className="settings-select" disabled={isRefreshingRate}>
+            {SUPPORTED_CURRENCIES.map(([code, label]) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
           </select>
+        </div>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>Live Exchange Rate</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>
+              1 {BASE_CURRENCY} = {exchangeRate.toLocaleString(undefined, { maximumFractionDigits: 6 })} {currency}
+              {exchangeUpdated ? ` - updated ${new Date(exchangeUpdated).toLocaleString()}` : ''}
+              {exchangeProvider ? ` - ${exchangeProvider}` : ''}
+            </p>
+            {exchangeProviderUrl && currency !== BASE_CURRENCY && (
+              <a
+                href="https://www.exchangerate-api.com"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: 'hsl(var(--accent))', fontSize: '0.85rem' }}
+              >
+                Rates By Exchange Rate API
+              </a>
+            )}
+          </div>
+          <button className="btn btn--outline" onClick={handleRefreshRate} disabled={isRefreshingRate}>
+            {isRefreshingRate ? 'Refreshing...' : 'Refresh Rate'}
+          </button>
         </div>
       </div>
 
