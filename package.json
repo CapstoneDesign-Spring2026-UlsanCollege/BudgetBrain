@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npm --prefix backend test"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.14",

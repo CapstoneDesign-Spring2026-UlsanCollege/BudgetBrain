@@ -1,8 +1,8 @@
-import React from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, AreaChart, Area
+  PieChart, Pie, Cell
 } from 'recharts';
+import { formatCurrency } from '../helpers';
 
 const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1', '#14b8a6'];
 
@@ -41,7 +41,7 @@ const Charts = ({ budgets, expenses }) => {
               <div key={i} className="tooltip-item">
                 <span className="tooltip-dot" style={{ backgroundColor: entry.color || entry.payload.color }}></span>
                 <span className="tooltip-text">
-                  {entry.name}: <span className="tooltip-value">₹{(entry.value).toLocaleString()}</span>
+                  {entry.name}: <span className="tooltip-value">{formatCurrency(entry.value)}</span>
                 </span>
               </div>
             ))}
@@ -133,4 +133,3 @@ const Charts = ({ budgets, expenses }) => {
 };
 
 export default Charts;
-

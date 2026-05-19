@@ -5,6 +5,8 @@ require('dotenv').config();
 
 mongoose.set('bufferCommands', false);
 
+const securityHeaders = require('./middleware/security');
+const createRateLimiter = require('./middleware/rateLimit');
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budgets');
 const expenseRoutes = require('./routes/expenses');
@@ -14,13 +16,52 @@ const app = express();
 let connectionPromise = null;
 let lastConnectionCheck = 0;
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use('/api/auth', authRoutes);
+app.use(securityHeaders);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origin is not allowed by CORS'));
+  },
+}));
+app.use(express.json({ limit: '100kb' }));
+
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  message: 'Too many authentication attempts. Please try again later.',
+});
+
+app.get('/api/health', async (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? 'ok' : 'degraded',
+    database: databaseReady ? 'connected' : 'disconnected',
+    uptime: process.uptime(),
+  });
+});
+
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/goals', goalRoutes);
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status = err.type === 'entity.too.large' ? 413 : 500;
+  const message = err.message === 'Origin is not allowed by CORS'
+    ? 'Origin is not allowed by CORS.'
+    : status === 413
+      ? 'Request body is too large.'
+      : 'Server Error';
+  res.status(status).json({ msg: message });
+});
 
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
@@ -46,7 +87,7 @@ async function connectDB() {
       lastConnectionCheck = Date.now();
       return;
     } catch (err) {
-      console.warn('MongoDB ping failed, reconnecting:', err.message);
+      console.warn(`MongoDB ping failed, reconnecting: ${err.message}`);
       connectionPromise = null;
       await mongoose.disconnect();
     }
@@ -56,7 +97,7 @@ async function connectDB() {
     return;
   }
   if (!process.env.MONGO_URI) {
-    console.warn('No MONGO_URI set - running without database. API requests requiring the database will fail.');
+    console.warn('No MONGO_URI set. Database-backed API requests will fail until it is configured.');
     return;
   }
   try {
@@ -68,7 +109,7 @@ async function connectDB() {
     console.log('MongoDB connected successfully.');
   } catch (err) {
     connectionPromise = null;
-    console.error('MongoDB connection failed:', err.message);
+    console.error(`MongoDB connection failed: ${err.message}`);
     throw err;
   }
 }

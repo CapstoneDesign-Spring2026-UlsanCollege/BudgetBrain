@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Link, useLoaderData, useRouteLoaderData } from "react-router-dom";
 import { toast } from "react-toastify";
 import { WalletIcon, ArrowTrendingDownIcon, ChartBarIcon, DocumentTextIcon, CircleStackIcon, TrophyIcon } from "@heroicons/react/24/solid";
@@ -8,7 +9,7 @@ import AddBudgetForm from "../components/AddBudgetForm";
 import AddExpenseForm from "../components/AddExpenseForm";
 import BudgetItem from "../components/BudgetItem";
 import Table from "../components/Table";
-import Charts from "../components/Charts";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 import {
   createBudget,
@@ -18,6 +19,8 @@ import {
   formatCurrency,
 } from "../helpers";
 import api from "../api";
+
+const Charts = lazy(() => import("../components/Charts"));
 
 export async function dashboardLoader() {
   let goals = [];
@@ -136,7 +139,9 @@ const Dashboard = () => {
                     <ChartBarIcon width={24} className="highlight" />
                     Financial Analytics
                   </h3>
-                  <Charts budgets={budgets} expenses={expenses} />
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <Charts budgets={budgets} expenses={expenses} />
+                  </Suspense>
                 </div>
               )}
 

@@ -8,27 +8,34 @@ const GoalSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    maxlength: 120
   },
   targetAmount: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
   savedAmount: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   deadline: {
     type: Date,
   },
   icon: {
     type: String,
-    default: '🎯'
+    default: '\uD83C\uDFAF',
+    maxlength: 16
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+GoalSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Goal', GoalSchema);

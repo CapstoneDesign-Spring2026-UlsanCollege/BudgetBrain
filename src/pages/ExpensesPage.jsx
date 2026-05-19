@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useLoaderData, useSearchParams } from "react-router-dom";
+import { useRouteLoaderData, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, XMarkIcon, CalendarDaysIcon } from "@heroicons/react/24/solid";
 import Table from "../components/Table";
-import { deleteItem, fetchData, formatCurrency } from "../helpers";
+import { deleteItem, formatCurrency } from "../helpers";
 import { EXPENSE_CATEGORIES } from "../components/AddExpenseForm";
-
-export async function expensesLoader() {
-  const expenses = await fetchData("expenses");
-  return { expenses };
-}
 
 export async function expensesAction({ request }) {
   const data = await request.formData();
@@ -26,8 +21,20 @@ export async function expensesAction({ request }) {
 
 const categoryMap = Object.fromEntries(EXPENSE_CATEGORIES);
 
+const escapeCSV = (value) => {
+  const text = String(value ?? '');
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const escapeHTML = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
 const ExpensesPage = () => {
-  const { expenses } = useLoaderData();
+  const { expenses } = useRouteLoaderData("main");
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [sortBy, setSortBy] = useState('date-desc');
@@ -110,7 +117,7 @@ const ExpensesPage = () => {
       categoryMap[e.category]?.[1] || 'Other',
       new Date(e.createdAt).toLocaleDateString()
     ]);
-    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const csv = [headers, ...rows].map(r => r.map(escapeCSV).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -123,8 +130,12 @@ const ExpensesPage = () => {
 
   const exportPDF = () => {
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Your browser blocked the print window. Please allow popups and try again.');
+      return;
+    }
     const rows = filtered.map((e, i) =>
-      `<tr><td>${i + 1}</td><td>${e.name}</td><td>${categoryMap[e.category]?.[0] || '📦'} ${categoryMap[e.category]?.[1] || 'Other'}</td><td>${formatCurrency(e.amount)}</td><td>${new Date(e.createdAt).toLocaleDateString()}</td></tr>`
+      `<tr><td>${i + 1}</td><td>${escapeHTML(e.name)}</td><td>${escapeHTML(categoryMap[e.category]?.[1] || 'Other')}</td><td>${escapeHTML(formatCurrency(e.amount))}</td><td>${escapeHTML(new Date(e.createdAt).toLocaleDateString())}</td></tr>`
     ).join('');
     const html = `
       <html><head><title>BudgetBrain Expenses</title>

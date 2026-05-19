@@ -1,16 +1,9 @@
-import { useLoaderData, Link } from 'react-router-dom';
+import { Link, useRouteLoaderData } from 'react-router-dom';
 import { WalletIcon } from '@heroicons/react/24/solid';
-import { fetchData } from '../helpers';
 import BudgetItem from '../components/BudgetItem';
 
-export async function budgetsListLoader() {
-  const budgets = await fetchData('budgets');
-  const expenses = await fetchData('expenses');
-  return { budgets, expenses };
-}
-
 const BudgetsList = () => {
-  const { budgets, expenses } = useLoaderData();
+  const { budgets, expenses } = useRouteLoaderData("main");
 
   return (
     <div className="grid-lg" style={{ width: '100%' }}>

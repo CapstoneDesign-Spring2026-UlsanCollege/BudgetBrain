@@ -26,11 +26,10 @@ export const fetchData = async (category) => {
   }
   try {
     const res = await api.get(`/${category}`);
-    // Normalize MongoDB _id to id for frontend compatibility
     return res.data.map(item => ({ ...item, id: item._id || item.id }));
   } catch (error) {
     console.error(`Error fetching ${category}:`, error);
-    return [];
+    throw error;
   }
 };
 
@@ -101,7 +100,8 @@ export const formatCurrency = (amt) => {
   } catch {
     currency = 'NPR';
   }
-  return amt.toLocaleString(undefined, {
+  const amount = Number.isFinite(Number(amt)) ? Number(amt) : 0;
+  return amount.toLocaleString(undefined, {
     style: "currency",
     currency,
   });

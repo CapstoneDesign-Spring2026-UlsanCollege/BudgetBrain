@@ -1,15 +1,24 @@
 const jwt = require('jsonwebtoken');
+const { sendError } = require('../utils/http');
+
+function getToken(req) {
+  const headerToken = req.header('x-auth-token');
+  const authHeader = req.header('authorization');
+
+  if (headerToken) return headerToken;
+  if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return null;
+}
 
 module.exports = function(req, res, next) {
-  // Get token from header
-  const token = req.header('x-auth-token');
+  const token = getToken(req);
 
-  // Check if not token
   if (!token) {
-    return res.status(401).json({ msg: 'No token, authorization denied' });
+    return sendError(res, 401, 'Authentication is required.');
   }
 
-  // Verify token
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET is required');
@@ -18,6 +27,12 @@ module.exports = function(req, res, next) {
     req.user = decoded.user;
     next();
   } catch (err) {
-    res.status(401).json({ msg: 'Token is not valid' });
+    if (err.name === 'TokenExpiredError') {
+      return sendError(res, 401, 'Your session has expired. Please log in again.');
+    }
+    if (err.message === 'JWT_SECRET is required') {
+      return sendError(res, 500, 'Authentication is not configured.');
+    }
+    return sendError(res, 401, 'Token is not valid.');
   }
 };

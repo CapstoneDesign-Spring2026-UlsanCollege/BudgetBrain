@@ -11,9 +11,15 @@ import { fetchData } from "../helpers";
 
 // loader
 export async function mainLoader() {
+  if (!localStorage.getItem("token")) {
+    return { userName: null, budgets: [], expenses: [] };
+  }
+
   const userName = await fetchData("userName");
-  const budgets = await fetchData("budgets");
-  const expenses = await fetchData("expenses");
+  const [budgets, expenses] = await Promise.all([
+    fetchData("budgets"),
+    fetchData("expenses"),
+  ]);
   return { userName, budgets, expenses };
 }
 

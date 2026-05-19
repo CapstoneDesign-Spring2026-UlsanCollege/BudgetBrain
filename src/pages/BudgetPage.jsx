@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useParams, useLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 
 import { PencilIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
@@ -10,7 +10,7 @@ import AddExpenseForm from "../components/AddExpenseForm";
 import BudgetItem from "../components/BudgetItem";
 import Table from "../components/Table";
 
-import { createExpense, deleteItem, updateBudget, formatCurrency, getAllMatchingItems } from "../helpers";
+import { createExpense, deleteItem, updateBudget, getAllMatchingItems } from "../helpers";
 
 export async function budgetLoader({ params }) {
   const budgets = await getAllMatchingItems({
@@ -43,6 +43,7 @@ export async function budgetAction({ request }) {
         name: values.newExpense,
         amount: values.newExpenseAmount,
         budgetId: values.newExpenseBudget,
+        category: values.category,
       });
       return toast.success(`Expense ${values.newExpense} created!`);
     } catch (e) {
@@ -64,7 +65,6 @@ export async function budgetAction({ request }) {
 }
 
 const BudgetPage = () => {
-  const { id } = useParams();
   const [editing, setEditing] = useState(false);
   const [editedBudget, setEditedBudget] = useState({});
   const { budget, expenses } = useLoaderData();

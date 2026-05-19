@@ -9,7 +9,6 @@ import { BanknotesIcon, TrashIcon } from "@heroicons/react/24/outline";
 // helper functions
 import {
   formatCurrency,
-  calculateSpentByBudget,
 } from "../helpers";
 
 const BudgetItem = ({ budget, expenses, showDelete = false }) => {
@@ -17,16 +16,11 @@ const BudgetItem = ({ budget, expenses, showDelete = false }) => {
   const [spent, setSpent] = useState(0);
 
   useEffect(() => {
-    if (expenses) {
-      const budgetSpent = expenses.reduce((acc, expense) => {
-        const expBudgetId = expense.budget || expense.budgetId;
-        return expBudgetId === id ? acc + expense.amount : acc;
-      }, 0);
-      setSpent(budgetSpent);
-      return;
-    }
-
-    calculateSpentByBudget(id).then(setSpent);
+    const budgetSpent = (expenses || []).reduce((acc, expense) => {
+      const expBudgetId = expense.budget || expense.budgetId;
+      return expBudgetId === id ? acc + expense.amount : acc;
+    }, 0);
+    setSpent(budgetSpent);
   }, [id, expenses]);
 
   const progressPercent = amount > 0 ? (spent / amount) * 100 : 0;

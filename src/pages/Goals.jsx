@@ -7,7 +7,7 @@ import {
 import api from '../api';
 import { formatCurrency } from '../helpers';
 
-const ICONS = ['🎯', '🏠', '🚗', '✈️', '🎓', '💻', '❤️', '🎮', '📱', '💎', '🏖️', '🎸'];
+const ICONS = ['\uD83C\uDFAF', '\uD83C\uDFE0', '\uD83D\uDE97', '\u2708\uFE0F', '\uD83C\uDF93', '\uD83D\uDCBB', '\u2764\uFE0F', '\uD83C\uDFAE', '\uD83D\uDCF1', '\uD83D\uDC8E', '\uD83C\uDFD6\uFE0F', '\uD83C\uDFB8'];
 
 export async function goalsLoader() {
   try {
@@ -26,7 +26,7 @@ const Goals = () => {
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [icon, setIcon] = useState('🎯');
+  const [icon, setIcon] = useState('\uD83C\uDFAF');
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ const Goals = () => {
       setName('');
       setTarget('');
       setDeadline('');
-      setIcon('🎯');
+      setIcon('\uD83C\uDFAF');
       setShowForm(false);
       toast.success('Goal created!');
     } catch {

@@ -3,12 +3,18 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 80
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    trim: true,
+    lowercase: true,
+    maxlength: 254
   },
   password: {
     type: String,
@@ -16,12 +22,15 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: '🎯'
+    default: '\uD83C\uDFAF',
+    maxlength: 16
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+UserSchema.index({ email: 1 }, { unique: true });
 
 module.exports = mongoose.model('User', UserSchema);

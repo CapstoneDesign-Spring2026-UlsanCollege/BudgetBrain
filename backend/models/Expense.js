@@ -13,20 +13,28 @@ const ExpenseSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    maxlength: 120
   },
   amount: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
   category: {
     type: String,
-    default: 'other'
+    default: 'other',
+    trim: true,
+    maxlength: 40
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+ExpenseSchema.index({ user: 1, createdAt: -1 });
+ExpenseSchema.index({ user: 1, budget: 1 });
 
 module.exports = mongoose.model('Expense', ExpenseSchema);

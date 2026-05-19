@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { createBrowserRouter, RouterProvider, redirect } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -6,17 +7,38 @@ import Main, { mainLoader } from "./layouts/Main";
 import { logoutAction } from "./actions/logout";
 import { deleteBudget } from "./actions/deleteBudget";
 
-import Dashboard, { dashboardAction, dashboardLoader } from "./pages/Dashboard";
 import Error from "./pages/Error";
-import BudgetPage, { budgetAction, budgetLoader } from "./pages/BudgetPage";
-import ExpensesPage, { expensesAction, expensesLoader } from "./pages/ExpensesPage";
-import Analytics, { analyticsLoader } from "./pages/Analytics";
-import Goals, { goalsLoader } from "./pages/Goals";
-import Profile, { profileLoader } from "./pages/Profile";
-import Settings from "./pages/Settings";
-import BudgetsList, { budgetsListLoader } from "./pages/BudgetsList";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import LoadingSpinner from "./components/LoadingSpinner";
+
+import { dashboardAction, dashboardLoader } from "./pages/Dashboard";
+import { budgetAction, budgetLoader } from "./pages/BudgetPage";
+import { expensesAction } from "./pages/ExpensesPage";
+import { goalsLoader } from "./pages/Goals";
+import { profileLoader } from "./pages/Profile";
+import { fetchData } from "./helpers";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const BudgetPage = lazy(() => import("./pages/BudgetPage"));
+const ExpensesPage = lazy(() => import("./pages/ExpensesPage"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Goals = lazy(() => import("./pages/Goals"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
+const BudgetsList = lazy(() => import("./pages/BudgetsList"));
+
+async function analyticsLoader() {
+  const budgets = await fetchData('budgets');
+  const expenses = await fetchData('expenses');
+  return { budgets, expenses };
+}
+
+const withSuspense = (element) => (
+  <Suspense fallback={<LoadingSpinner />}>
+    {element}
+  </Suspense>
+);
 
 const authLoader = () => {
   const token = localStorage.getItem("token");
@@ -42,20 +64,20 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Dashboard />,
+        element: withSuspense(<Dashboard />),
         loader: protectedLoader(dashboardLoader),
         action: dashboardAction,
         errorElement: <Error />,
       },
       {
         path: "budgets",
-        element: <BudgetsList />,
-        loader: protectedLoader(budgetsListLoader),
+        element: withSuspense(<BudgetsList />),
+        loader: authLoader,
         errorElement: <Error />,
       },
       {
         path: "budget/:id",
-        element: <BudgetPage />,
+        element: withSuspense(<BudgetPage />),
         loader: protectedLoader(budgetLoader),
         action: budgetAction,
         errorElement: <Error />,
@@ -63,32 +85,33 @@ const router = createBrowserRouter([
       },
       {
         path: "expenses",
-        element: <ExpensesPage />,
-        loader: protectedLoader(expensesLoader),
+        element: withSuspense(<ExpensesPage />),
+        loader: authLoader,
         action: expensesAction,
         errorElement: <Error />,
       },
       {
         path: "analytics",
-        element: <Analytics />,
+        element: withSuspense(<Analytics />),
         loader: protectedLoader(analyticsLoader),
         errorElement: <Error />,
       },
       {
         path: "goals",
-        element: <Goals />,
+        element: withSuspense(<Goals />),
         loader: protectedLoader(goalsLoader),
         errorElement: <Error />,
       },
       {
         path: "profile",
-        element: <Profile />,
+        element: withSuspense(<Profile />),
         loader: protectedLoader(profileLoader),
         errorElement: <Error />,
       },
       {
         path: "settings",
-        element: <Settings />,
+        element: withSuspense(<Settings />),
+        loader: authLoader,
         errorElement: <Error />,
       },
       { path: "logout", action: logoutAction },

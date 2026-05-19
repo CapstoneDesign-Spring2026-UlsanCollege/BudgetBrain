@@ -39,7 +39,7 @@ const Login = () => {
       const { token, user } = res.data;
       localStorage.setItem('token', token);
       localStorage.setItem('userName', JSON.stringify(user.name));
-      localStorage.setItem('budgetbrain-avatar', user.avatar || '🎯');
+      localStorage.setItem('budgetbrain-avatar', user.avatar || '\uD83C\uDFAF');
       toast.success(`Welcome back, ${user.name}!`);
       navigate('/');
     } catch (err) {

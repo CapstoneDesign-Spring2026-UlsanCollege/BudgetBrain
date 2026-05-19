@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { UserIcon, KeyIcon, EnvelopeIcon, PencilIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import api from '../api';
 
-const AVATARS = ['🎯', '🌟', '💎', '🚀', '🔥', '💪', '🎨', '🌈', '🦁', '🐉', '🦅', '⭐'];
+const AVATARS = ['\uD83C\uDFAF', '\uD83C\uDF1F', '\uD83D\uDC8E', '\uD83D\uDE80', '\uD83D\uDD25', '\uD83D\uDCAA', '\uD83C\uDFA8', '\uD83C\uDF08', '\uD83E\uDD81', '\uD83D\uDC09', '\uD83E\uDD85', '\u2B50'];
 
 export async function profileLoader() {
   try {
@@ -22,34 +22,36 @@ const Profile = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [avatar, setAvatar] = useState(localStorage.getItem('budgetbrain-avatar') || '🎯');
+  const [avatar, setAvatar] = useState(localStorage.getItem('budgetbrain-avatar') || '\uD83C\uDFAF');
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(name);
 
   const handleUpdateProfile = async (e, nextName = name) => {
     e.preventDefault();
+    const cleanName = nextName.trim();
+    if (!cleanName) return toast.error('Display name is required');
     try {
-      await api.put('/auth/me', { name: nextName });
-      setName(nextName);
-      localStorage.setItem('userName', JSON.stringify(nextName));
+      await api.put('/auth/me', { name: cleanName });
+      setName(cleanName);
+      localStorage.setItem('userName', JSON.stringify(cleanName));
       toast.success('Profile updated!');
       setIsEditingName(false);
-    } catch {
-      toast.error('Failed to update profile');
+    } catch (err) {
+      toast.error(err.userMessage || 'Failed to update profile');
     }
   };
 
   const handleAvatarSelect = async (emoji) => {
-    setAvatar(emoji);
-    localStorage.setItem('budgetbrain-avatar', emoji);
     try {
       await api.put('/auth/me', { avatar: emoji });
-    } catch {
-      /* avatar saved locally even if server sync fails */
+      setAvatar(emoji);
+      localStorage.setItem('budgetbrain-avatar', emoji);
+      setShowAvatarPicker(false);
+      toast.success('Avatar updated!');
+    } catch (err) {
+      toast.error(err.userMessage || 'Failed to update avatar');
     }
-    setShowAvatarPicker(false);
-    toast.success('Avatar updated!');
   };
 
   const handleChangePassword = async (e) => {

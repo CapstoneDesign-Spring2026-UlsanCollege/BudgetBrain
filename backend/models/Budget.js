@@ -8,20 +8,27 @@ const BudgetSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    maxlength: 80
   },
   amount: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
   color: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    maxlength: 32
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+BudgetSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Budget', BudgetSchema);

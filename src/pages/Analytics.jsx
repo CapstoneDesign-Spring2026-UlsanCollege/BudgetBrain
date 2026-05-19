@@ -3,15 +3,9 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
-import { fetchData, formatCurrency } from '../helpers';
+import { formatCurrency } from '../helpers';
 
 const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1', '#14b8a6'];
-
-export async function analyticsLoader() {
-  const budgets = await fetchData('budgets');
-  const expenses = await fetchData('expenses');
-  return { budgets, expenses };
-}
 
 const Analytics = () => {
   const { budgets, expenses } = useLoaderData();
@@ -58,7 +52,7 @@ const Analytics = () => {
           <p style={{ fontWeight: 600 }}>{payload[0].payload.name || payload[0].payload.date}</p>
           {payload.map((entry, i) => (
             <p key={i} style={{ color: entry.color }}>
-              {entry.name}: ₹{(entry.value).toLocaleString()}
+              {entry.name}: {formatCurrency(entry.value)}
             </p>
           ))}
         </div>
@@ -129,7 +123,7 @@ const Analytics = () => {
           </div>
         )}
 
-        {/* Area Chart – Spending over time */}
+        {/* Area Chart: Spending over time */}
         {dailyData.length > 0 && (
           <div className="chart-card">
             <h3 className="chart-title">Spending Over Time</h3>
