@@ -207,6 +207,10 @@
 }
 
 /* --- Welcome Banner (Full Width) --- */
+.dashboard-top-tools {
+  padding: 2rem 3rem 0;
+}
+
 .welcome-banner {
   padding: 4rem 3rem;
   background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
@@ -375,7 +379,7 @@
   .search-box {
     display: none;
   }
-  .top-navbar, .welcome-banner, .dashboard-content {
+  .top-navbar, .welcome-banner, .dashboard-content, .dashboard-top-tools {
     padding: 2rem;
   }
   .currency-dashboard-bar {
