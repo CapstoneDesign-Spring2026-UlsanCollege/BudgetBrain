@@ -59,8 +59,12 @@ const Goals = () => {
       setGoals(goals.map(g => g._id === goalId ? res.data : g));
       setAddAmounts({ ...addAmounts, [goalId]: '' });
       toast.success(`Added ${formatCurrency(amount)}!`);
-    } catch {
-      toast.error('Failed to add savings');
+
+      if (res.data.savedAmount >= res.data.targetAmount && currentSaved < res.data.targetAmount) {
+        toast.success(`🎉 Congratulations! You have reached your goal for ${res.data.name}!`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.msg || 'Failed to add savings');
     }
   };
 
