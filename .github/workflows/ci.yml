@@ -8,11 +8,13 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    env:
+      MONGOMS_DISABLE_POSTINSTALL: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.19.0
           cache: npm
       - run: npm ci
       - run: npm --prefix backend ci
