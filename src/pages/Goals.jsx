@@ -71,7 +71,7 @@ const Goals = () => {
       setDeadline('');
       setIcon('\uD83C\uDFAF');
       setShowForm(false);
-      toast.success('Goal created and saved to database!');
+      toast.success('Goal created!');
     } catch (err) {
       toast.error(err.userMessage || err.response?.data?.msg || 'Failed to create goal');
     }
@@ -108,7 +108,7 @@ const Goals = () => {
       window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: savedGoalFromResponse }));
       setAddAmounts((current) => ({ ...current, [goalId]: '' }));
       form.reset();
-      toast.success(`Added ${formatCurrency(amount)} and saved to database!`);
+      toast.success(`Added ${formatCurrency(amount)}!`);
 
       const latestGoals = await refreshGoalsQuietly();
       const savedGoal = latestGoals?.find((item) => item.id === goalId) || savedGoalFromResponse;
@@ -132,7 +132,7 @@ const Goals = () => {
     try {
       await api.delete(`/goals/${goalId}`);
       await refreshGoalsQuietly();
-      toast.success('Goal deleted from database');
+      toast.success('Goal deleted');
     } catch (err) {
       toast.error(err.userMessage || err.response?.data?.msg || `Failed to delete ${goal?.name || 'goal'}`);
     }
