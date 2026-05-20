@@ -89,7 +89,11 @@ const Goals = () => {
       try {
         res = await api.post(`/goals/${goalId}/savings`, { amount });
       } catch (postErr) {
-        res = await api.put(`/goals/${goalId}`, { savedAmount: currentSaved + amount });
+        try {
+          res = await api.put(`/goals/${goalId}/savings`, { amount });
+        } catch {
+          res = await api.put(`/goals/${goalId}`, { savedAmount: currentSaved + amount });
+        }
       }
 
       const savedGoalFromResponse = normalizeGoal(res.data);
@@ -112,13 +116,9 @@ const Goals = () => {
         }
       }
     } catch (err) {
-      toast.error(err.userMessage || err.response?.data?.msg || `Failed to add savings to ${goal.name}`);
+      const message = err.userMessage || err.response?.data?.msg || err.message || `Failed to add savings to ${goal.name}`;
+      toast.error(`Could not save goal amount: ${message}`);
     }
-  };
-
-  const submitSavingsForm = (event) => {
-    event.preventDefault();
-    event.currentTarget.form?.requestSubmit();
   };
 
   const handleDelete = async (goalId) => {
@@ -260,8 +260,6 @@ const Goals = () => {
                   <button
                     type="submit"
                     className="btn btn--dark"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={submitSavingsForm}
                   >
                     <BanknotesIcon width={16} />
                     <span>Add</span>

@@ -67,6 +67,7 @@ async function addSavings(req, res) {
 
 router.post('/:id/savings', auth, addSavings);
 router.patch('/:id/savings', auth, addSavings);
+router.put('/:id/savings', auth, addSavings);
 
 router.put('/:id', auth, async (req, res) => {
   if (!isValidObjectId(req.params.id)) return sendError(res, 400, 'Goal id is invalid.');
