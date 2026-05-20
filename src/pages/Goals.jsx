@@ -19,6 +19,7 @@ export async function goalsLoader() {
 }
 
 function normalizeGoal(goal) {
+  if (!goal) return null;
   return {
     ...goal,
     id: goal.id || goal._id,
@@ -29,7 +30,7 @@ function normalizeGoal(goal) {
 
 async function loadGoalsFromDatabase() {
   const res = await api.get('/goals');
-  return res.data.map(normalizeGoal);
+  return res.data.map(normalizeGoal).filter(Boolean);
 }
 
 const Goals = () => {
@@ -78,7 +79,8 @@ const Goals = () => {
 
   const handleAddSavings = async (event, goalId) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const amount = Number(formData.get('amount'));
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
     const goal = goals.find(g => g.id === goalId);
@@ -96,13 +98,16 @@ const Goals = () => {
         }
       }
 
-      const savedGoalFromResponse = normalizeGoal(res.data);
+      const savedGoalFromResponse = normalizeGoal(res?.data) || {
+        ...goal,
+        savedAmount: currentSaved + amount,
+      };
       setGoals((currentGoals) => currentGoals.map((item) => (
         item.id === goalId ? savedGoalFromResponse : item
       )));
       window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: savedGoalFromResponse }));
       setAddAmounts((current) => ({ ...current, [goalId]: '' }));
-      event.currentTarget.reset();
+      form.reset();
       toast.success(`Added ${formatCurrency(amount)} and saved to database!`);
 
       const latestGoals = await refreshGoalsQuietly();
