@@ -49,13 +49,22 @@ const Goals = () => {
     return latestGoals;
   };
 
+  const refreshGoalsQuietly = async () => {
+    try {
+      return await refreshGoalsFromDatabase();
+    } catch (err) {
+      console.warn('Goal saved, but refresh failed:', err.userMessage || err.message);
+      return null;
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
       await api.post('/goals', {
         name, targetAmount: +target, deadline: deadline || null, icon,
       });
-      await refreshGoalsFromDatabase();
+      await refreshGoalsQuietly();
       setName('');
       setTarget('');
       setDeadline('');
@@ -83,11 +92,17 @@ const Goals = () => {
         res = await api.put(`/goals/${goalId}`, { savedAmount: currentSaved + amount });
       }
 
-      const latestGoals = await refreshGoalsFromDatabase();
-      const savedGoal = latestGoals.find((item) => item.id === goalId) || normalizeGoal(res.data);
+      const savedGoalFromResponse = normalizeGoal(res.data);
+      setGoals((currentGoals) => currentGoals.map((item) => (
+        item.id === goalId ? savedGoalFromResponse : item
+      )));
+      window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: savedGoalFromResponse }));
       setAddAmounts((current) => ({ ...current, [goalId]: '' }));
       event.currentTarget.reset();
       toast.success(`Added ${formatCurrency(amount)} and saved to database!`);
+
+      const latestGoals = await refreshGoalsQuietly();
+      const savedGoal = latestGoals?.find((item) => item.id === goalId) || savedGoalFromResponse;
 
       if (savedGoal.savedAmount >= savedGoal.targetAmount && currentSaved < savedGoal.targetAmount) {
         const message = `Congratulations! You reached your goal for ${savedGoal.name}!`;
@@ -111,7 +126,7 @@ const Goals = () => {
     const goal = goals.find(g => g.id === goalId);
     try {
       await api.delete(`/goals/${goalId}`);
-      await refreshGoalsFromDatabase();
+      await refreshGoalsQuietly();
       toast.success('Goal deleted from database');
     } catch (err) {
       toast.error(err.userMessage || err.response?.data?.msg || `Failed to delete ${goal?.name || 'goal'}`);
