@@ -46,7 +46,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-router.patch('/:id/savings', auth, async (req, res) => {
+async function addSavings(req, res) {
   if (!isValidObjectId(req.params.id)) return sendError(res, 400, 'Goal id is invalid.');
 
   const parsedAmount = parsePositiveNumber(req.body.amount, 'Savings amount');
@@ -63,7 +63,10 @@ router.patch('/:id/savings', auth, async (req, res) => {
   } catch (err) {
     handleServerError(res, err);
   }
-});
+}
+
+router.post('/:id/savings', auth, addSavings);
+router.patch('/:id/savings', auth, addSavings);
 
 router.put('/:id', auth, async (req, res) => {
   if (!isValidObjectId(req.params.id)) return sendError(res, 400, 'Goal id is invalid.');

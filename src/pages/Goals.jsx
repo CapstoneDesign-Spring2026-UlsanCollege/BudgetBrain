@@ -28,6 +28,14 @@ const Goals = () => {
   const [deadline, setDeadline] = useState('');
   const [icon, setIcon] = useState('\uD83C\uDFAF');
 
+  const mergeUpdatedGoal = (updatedGoal) => {
+    const updatedId = updatedGoal._id || updatedGoal.id;
+    setGoals((currentGoals) => currentGoals.map((goal) => (
+      (goal._id || goal.id) === updatedId ? updatedGoal : goal
+    )));
+    window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: updatedGoal }));
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
@@ -53,8 +61,14 @@ const Goals = () => {
     if (!goal) return toast.error('Goal not found');
     try {
       const currentSaved = typeof goal.savedAmount === 'number' ? goal.savedAmount : 0;
-      const res = await api.patch(`/goals/${goalId}/savings`, { amount });
-      setGoals(goals.map(g => (g._id || g.id) === goalId ? res.data : g));
+      let res;
+      try {
+        res = await api.post(`/goals/${goalId}/savings`, { amount });
+      } catch (postErr) {
+        res = await api.put(`/goals/${goalId}`, { savedAmount: currentSaved + amount });
+      }
+
+      mergeUpdatedGoal(res.data);
       setAddAmounts({ ...addAmounts, [goalId]: '' });
       toast.success(`Added ${formatCurrency(amount)}!`);
 
@@ -65,7 +79,6 @@ const Goals = () => {
           new Notification('BudgetBrain goal reached', { body: message });
         }
       }
-      window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: res.data }));
     } catch (err) {
       toast.error(err.userMessage || err.response?.data?.msg || 'Failed to add savings');
     }
@@ -75,7 +88,7 @@ const Goals = () => {
     if (!confirm('Delete this goal?')) return;
     try {
       await api.delete(`/goals/${goalId}`);
-      setGoals(goals.filter(g => g._id !== goalId));
+      setGoals(goals.filter(g => (g._id || g.id) !== goalId));
       toast.success('Goal deleted');
     } catch {
       toast.error('Failed to delete');
