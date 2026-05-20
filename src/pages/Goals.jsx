@@ -47,24 +47,27 @@ const Goals = () => {
   };
 
   const handleAddSavings = async (goalId) => {
-    const amount = +addAmounts[goalId];
+    const amount = Number(addAmounts[goalId]);
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
-    const goal = goals.find(g => g._id === goalId);
+    const goal = goals.find(g => (g._id || g.id) === goalId);
     if (!goal) return toast.error('Goal not found');
     try {
       const currentSaved = typeof goal.savedAmount === 'number' ? goal.savedAmount : 0;
-      const res = await api.put(`/goals/${goalId}`, {
-        savedAmount: currentSaved + amount,
-      });
-      setGoals(goals.map(g => g._id === goalId ? res.data : g));
+      const res = await api.patch(`/goals/${goalId}/savings`, { amount });
+      setGoals(goals.map(g => (g._id || g.id) === goalId ? res.data : g));
       setAddAmounts({ ...addAmounts, [goalId]: '' });
       toast.success(`Added ${formatCurrency(amount)}!`);
 
       if (res.data.savedAmount >= res.data.targetAmount && currentSaved < res.data.targetAmount) {
-        toast.success(`🎉 Congratulations! You have reached your goal for ${res.data.name}!`);
+        const message = `Congratulations! You reached your goal for ${res.data.name}!`;
+        toast.success(message);
+        if (localStorage.getItem('budgetbrain-notifications') !== 'false' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification('BudgetBrain goal reached', { body: message });
+        }
       }
+      window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: res.data }));
     } catch (err) {
-      toast.error(err.response?.data?.msg || 'Failed to add savings');
+      toast.error(err.userMessage || err.response?.data?.msg || 'Failed to add savings');
     }
   };
 
@@ -170,7 +173,7 @@ const Goals = () => {
                       <small className="goal-deadline">{daysLeft} days left</small>
                     )}
                   </div>
-                  <button className="goal-delete" onClick={() => handleDelete(goal._id)}>
+                  <button type="button" className="goal-delete" onClick={() => handleDelete(goal._id || goal.id)}>
                     <TrashIcon width={16} />
                   </button>
                 </div>
@@ -197,10 +200,12 @@ const Goals = () => {
                   <input
                     type="number"
                     placeholder="Add Rs..."
-                    value={addAmounts[goal._id] || ''}
-                    onChange={e => setAddAmounts({ ...addAmounts, [goal._id]: e.target.value })}
+                    min="0"
+                    step="0.01"
+                    value={addAmounts[goal._id || goal.id] || ''}
+                    onChange={e => setAddAmounts({ ...addAmounts, [goal._id || goal.id]: e.target.value })}
                   />
-                  <button className="btn btn--dark" onClick={() => handleAddSavings(goal._id)}>
+                  <button type="button" className="btn btn--dark" onClick={() => handleAddSavings(goal._id || goal.id)}>
                     <BanknotesIcon width={16} />
                     <span>Add</span>
                   </button>

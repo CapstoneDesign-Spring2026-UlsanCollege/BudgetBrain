@@ -46,6 +46,25 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+router.patch('/:id/savings', auth, async (req, res) => {
+  if (!isValidObjectId(req.params.id)) return sendError(res, 400, 'Goal id is invalid.');
+
+  const parsedAmount = parsePositiveNumber(req.body.amount, 'Savings amount');
+  if (parsedAmount.error) return sendError(res, 400, parsedAmount.error);
+
+  try {
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) return sendError(res, 404, 'Goal not found.');
+    if (goal.user.toString() !== req.user.id) return sendError(res, 403, 'Not authorized.');
+
+    goal.savedAmount = Number(goal.savedAmount || 0) + parsedAmount.value;
+    await goal.save();
+    res.json(goal);
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
+
 router.put('/:id', auth, async (req, res) => {
   if (!isValidObjectId(req.params.id)) return sendError(res, 400, 'Goal id is invalid.');
 

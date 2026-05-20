@@ -16,15 +16,16 @@ export async function mainLoader() {
   }
 
   const userName = await fetchData("userName");
-  const [budgets, expenses] = await Promise.all([
+  const [budgets, expenses, goals] = await Promise.all([
     fetchData("budgets"),
     fetchData("expenses"),
+    fetchData("goals"),
   ]);
-  return { userName, budgets, expenses };
+  return { userName, budgets, expenses, goals };
 }
 
 const Main = () => {
-  const { userName, budgets, expenses } = useLoaderData();
+  const { userName, budgets, expenses, goals } = useLoaderData();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [, setCurrencyVersion] = useState(0);
 
@@ -45,7 +46,7 @@ const Main = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} budgets={budgets} expenses={expenses} userName={userName} />
       
       <main className="dashboard-main">
-        <Navbar onToggleSidebar={toggleSidebar} userName={userName} />
+        <Navbar onToggleSidebar={toggleSidebar} userName={userName} budgets={budgets} expenses={expenses} goals={goals} />
         
         {/* Outlet renders the child routes like Dashboard, Expenses, etc. */}
         <Outlet />

@@ -183,13 +183,69 @@
 
 .notif-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 8px;
-  height: 8px;
+  top: -8px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   background: hsl(var(--accent));
   border-radius: 50%;
   box-shadow: 0 0 0 2px hsl(var(--bkg-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.notif-dropdown {
+  width: min(360px, calc(100vw - 2rem));
+}
+
+.notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 0.4rem;
+}
+
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem;
+  border-radius: calc(var(--radius) - 4px);
+  color: hsl(var(--text));
+  text-decoration: none;
+  border-left: 3px solid hsl(var(--accent));
+}
+
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.notif-item small {
+  color: hsl(var(--muted));
+  line-height: 1.35;
+}
+
+.notif-item.warning {
+  border-left-color: hsl(var(--warning));
+}
+
+.notif-item.danger {
+  border-left-color: hsl(var(--danger));
+}
+
+.notif-item.success {
+  border-left-color: hsl(var(--success));
+}
+
+.notif-muted {
+  padding: 0.75rem 1rem;
+  color: hsl(var(--muted));
+  font-size: 0.85rem;
+  border-top: 1px solid var(--glass-border);
 }
 
 .avatar {

@@ -11,14 +11,85 @@ import {
   ArrowRightOnRectangleIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/solid";
+import api from "../api";
+import { formatCurrency } from "../helpers";
 
-export default function Navbar({ onToggleSidebar, userName }) {
+function buildNotifications({ budgets = [], expenses = [], goals = [] }) {
+  const notifications = [];
+  const budgetAlertsEnabled = localStorage.getItem('budgetbrain-budget-alerts') !== 'false';
+
+  if (budgetAlertsEnabled) {
+    budgets.forEach((budget) => {
+      const budgetId = budget._id || budget.id;
+      const spent = expenses.reduce((total, expense) => {
+        const expenseBudgetId = expense.budget || expense.budgetId;
+        return expenseBudgetId === budgetId ? total + Number(expense.amount || 0) : total;
+      }, 0);
+      const amount = Number(budget.amount || 0);
+      const pct = amount > 0 ? spent / amount : 0;
+
+      if (pct >= 1) {
+        notifications.push({
+          id: `budget-over-${budgetId}`,
+          title: `${budget.name} is over budget`,
+          body: `${formatCurrency(spent)} spent from ${formatCurrency(amount)}.`,
+          to: `/budget/${budgetId}`,
+          severity: 'danger',
+        });
+      } else if (pct >= 0.8) {
+        notifications.push({
+          id: `budget-near-${budgetId}`,
+          title: `${budget.name} is near its limit`,
+          body: `${Math.round(pct * 100)}% used. ${formatCurrency(amount - spent)} remaining.`,
+          to: `/budget/${budgetId}`,
+          severity: 'warning',
+        });
+      }
+    });
+  }
+
+  goals.forEach((goal) => {
+    const goalId = goal._id || goal.id;
+    const saved = Number(goal.savedAmount || 0);
+    const target = Number(goal.targetAmount || 0);
+    const deadline = goal.deadline ? new Date(goal.deadline) : null;
+    const daysLeft = deadline
+      ? Math.ceil((deadline.setHours(23, 59, 59, 999) - Date.now()) / (1000 * 60 * 60 * 24))
+      : null;
+
+    if (target > 0 && saved >= target) {
+      notifications.push({
+        id: `goal-complete-${goalId}`,
+        title: `${goal.name} goal reached`,
+        body: `${formatCurrency(saved)} saved.`,
+        to: '/goals',
+        severity: 'success',
+      });
+    } else if (daysLeft !== null && daysLeft <= 7) {
+      notifications.push({
+        id: `goal-due-${goalId}`,
+        title: `${goal.name} deadline is close`,
+        body: daysLeft < 0 ? 'Deadline has passed.' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`,
+        to: '/goals',
+        severity: daysLeft < 0 ? 'danger' : 'warning',
+      });
+    }
+  });
+
+  return notifications.slice(0, 8);
+}
+
+export default function Navbar({ onToggleSidebar, userName, budgets = [], expenses = [], goals = [] }) {
   const navigate = useNavigate();
   
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [liveGoals, setLiveGoals] = useState(goals);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
   
   const notifRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -32,6 +103,24 @@ export default function Navbar({ onToggleSidebar, userName }) {
       setIsDarkTheme(false);
       document.body.classList.add("light-theme");
     }
+  }, []);
+
+  useEffect(() => {
+    setLiveGoals(goals || []);
+  }, [goals]);
+
+  useEffect(() => {
+    async function refreshGoals() {
+      try {
+        const res = await api.get('/goals');
+        setLiveGoals(res.data.map((goal) => ({ ...goal, id: goal._id || goal.id })));
+      } catch {
+        /* notifications can still render budget alerts */
+      }
+    }
+
+    window.addEventListener('budgetbrain-goals-change', refreshGoals);
+    return () => window.removeEventListener('budgetbrain-goals-change', refreshGoals);
   }, []);
 
   useEffect(() => {
@@ -76,6 +165,35 @@ export default function Navbar({ onToggleSidebar, userName }) {
     navigate("/login");
   };
 
+  const notifications = buildNotifications({ budgets, expenses, goals: liveGoals });
+  const notificationsEnabled = localStorage.getItem('budgetbrain-notifications') !== 'false';
+
+  useEffect(() => {
+    if (!notificationsEnabled || notificationPermission !== 'granted' || notifications.length === 0) return;
+
+    const shown = JSON.parse(localStorage.getItem('budgetbrain-shown-notifications') || '{}');
+    const nextAlert = notifications.find((item) => !shown[item.id]);
+    if (!nextAlert) return;
+
+    new Notification(nextAlert.title, { body: nextAlert.body });
+    localStorage.setItem('budgetbrain-shown-notifications', JSON.stringify({
+      ...shown,
+      [nextAlert.id]: Date.now(),
+    }));
+  }, [notificationPermission, notificationsEnabled, notifications]);
+
+  const requestNotifications = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Browser notifications are not supported here.');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    toast[permission === 'granted' ? 'success' : 'info'](
+      permission === 'granted' ? 'Browser notifications enabled.' : 'Browser notifications were not enabled.'
+    );
+  };
+
   return (
     <header className="top-navbar">
       <button className="sidebar-toggle btn-icon" onClick={onToggleSidebar}>
@@ -108,17 +226,41 @@ export default function Navbar({ onToggleSidebar, userName }) {
             onClick={() => setIsNotifOpen(!isNotifOpen)}
           >
             <BellIcon width={24} />
-            <span className="notif-badge"></span>
+            {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
           </button>
           
           {isNotifOpen && (
             <div className="dropdown-menu notif-dropdown">
               <div className="dropdown-header">Notifications</div>
-              <div className="empty-notif">
-                <BellIcon width={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
-                <p>You're all caught up!</p>
-                <small style={{ opacity: 0.7 }}>No new alerts or messages.</small>
-              </div>
+              {notifications.length > 0 ? (
+                <div className="notif-list">
+                  {notifications.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.to}
+                      className={`notif-item ${item.severity}`}
+                      onClick={() => setIsNotifOpen(false)}
+                    >
+                      <strong>{item.title}</strong>
+                      <small>{item.body}</small>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-notif">
+                  <BellIcon width={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
+                  <p>You're all caught up!</p>
+                  <small style={{ opacity: 0.7 }}>No active budget or goal alerts.</small>
+                </div>
+              )}
+              {notificationsEnabled && notificationPermission === 'default' && (
+                <button className="dropdown-item" onClick={requestNotifications}>
+                  Enable browser notifications
+                </button>
+              )}
+              {!notificationsEnabled && (
+                <div className="notif-muted">Notifications are disabled in Settings.</div>
+              )}
             </div>
           )}
         </div>
