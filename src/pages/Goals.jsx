@@ -27,6 +27,11 @@ function normalizeGoal(goal) {
   };
 }
 
+async function loadGoalsFromDatabase() {
+  const res = await api.get('/goals');
+  return res.data.map(normalizeGoal);
+}
+
 const Goals = () => {
   const { goals: initialGoals } = useLoaderData();
   const [goals, setGoals] = useState(initialGoals);
@@ -37,30 +42,28 @@ const Goals = () => {
   const [deadline, setDeadline] = useState('');
   const [icon, setIcon] = useState('\uD83C\uDFAF');
 
-  const mergeUpdatedGoal = (updatedGoal) => {
-    const normalizedGoal = normalizeGoal(updatedGoal);
-    const updatedId = normalizedGoal.id;
-    setGoals((currentGoals) => currentGoals.map((goal) => (
-      goal.id === updatedId ? normalizedGoal : goal
-    )));
-    window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: normalizedGoal }));
+  const refreshGoalsFromDatabase = async () => {
+    const latestGoals = await loadGoalsFromDatabase();
+    setGoals(latestGoals);
+    window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: latestGoals }));
+    return latestGoals;
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/goals', {
+      await api.post('/goals', {
         name, targetAmount: +target, deadline: deadline || null, icon,
       });
-      setGoals([normalizeGoal(res.data), ...goals]);
+      await refreshGoalsFromDatabase();
       setName('');
       setTarget('');
       setDeadline('');
       setIcon('\uD83C\uDFAF');
       setShowForm(false);
-      toast.success('Goal created!');
-    } catch {
-      toast.error('Failed to create goal');
+      toast.success('Goal created and saved to database!');
+    } catch (err) {
+      toast.error(err.userMessage || err.response?.data?.msg || 'Failed to create goal');
     }
   };
 
@@ -80,13 +83,14 @@ const Goals = () => {
         res = await api.put(`/goals/${goalId}`, { savedAmount: currentSaved + amount });
       }
 
-      mergeUpdatedGoal(res.data);
+      const latestGoals = await refreshGoalsFromDatabase();
+      const savedGoal = latestGoals.find((item) => item.id === goalId) || normalizeGoal(res.data);
       setAddAmounts((current) => ({ ...current, [goalId]: '' }));
       event.currentTarget.reset();
-      toast.success(`Added ${formatCurrency(amount)}!`);
+      toast.success(`Added ${formatCurrency(amount)} and saved to database!`);
 
-      if (res.data.savedAmount >= res.data.targetAmount && currentSaved < res.data.targetAmount) {
-        const message = `Congratulations! You reached your goal for ${res.data.name}!`;
+      if (savedGoal.savedAmount >= savedGoal.targetAmount && currentSaved < savedGoal.targetAmount) {
+        const message = `Congratulations! You reached your goal for ${savedGoal.name}!`;
         toast.success(message);
         if (localStorage.getItem('budgetbrain-notifications') !== 'false' && 'Notification' in window && Notification.permission === 'granted') {
           new Notification('BudgetBrain goal reached', { body: message });
@@ -102,9 +106,8 @@ const Goals = () => {
     const goal = goals.find(g => g.id === goalId);
     try {
       await api.delete(`/goals/${goalId}`);
-      setGoals(goals.filter(g => g.id !== goalId));
-      toast.success('Goal deleted');
-      window.dispatchEvent(new CustomEvent('budgetbrain-goals-change', { detail: null }));
+      await refreshGoalsFromDatabase();
+      toast.success('Goal deleted from database');
     } catch (err) {
       toast.error(err.userMessage || err.response?.data?.msg || `Failed to delete ${goal?.name || 'goal'}`);
     }
