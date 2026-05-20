@@ -64,8 +64,10 @@ const Goals = () => {
     }
   };
 
-  const handleAddSavings = async (goalId) => {
-    const amount = Number(addAmounts[goalId]);
+  const handleAddSavings = async (event, goalId) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const amount = Number(formData.get('amount'));
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
     const goal = goals.find(g => g.id === goalId);
     if (!goal) return toast.error('Goal not found');
@@ -79,7 +81,8 @@ const Goals = () => {
       }
 
       mergeUpdatedGoal(res.data);
-      setAddAmounts({ ...addAmounts, [goalId]: '' });
+      setAddAmounts((current) => ({ ...current, [goalId]: '' }));
+      event.currentTarget.reset();
       toast.success(`Added ${formatCurrency(amount)}!`);
 
       if (res.data.savedAmount >= res.data.targetAmount && currentSaved < res.data.targetAmount) {
@@ -221,20 +224,21 @@ const Goals = () => {
                 </div>
                 <small style={{ color: 'hsl(215 20% 65%)' }}>{pct.toFixed(1)}% complete</small>
 
-                <div className="goal-add-savings">
+                <form className="goal-add-savings" onSubmit={(event) => handleAddSavings(event, goal.id)}>
                   <input
                     type="number"
+                    name="amount"
                     placeholder="Add Rs..."
                     min="0"
                     step="0.01"
                     value={addAmounts[goal.id] || ''}
                     onChange={e => setAddAmounts({ ...addAmounts, [goal.id]: e.target.value })}
                   />
-                  <button type="button" className="btn btn--dark" onClick={() => handleAddSavings(goal.id)}>
+                  <button type="submit" className="btn btn--dark">
                     <BanknotesIcon width={16} />
                     <span>Add</span>
                   </button>
-                </div>
+                </form>
               </div>
             );
           })}
