@@ -141,6 +141,15 @@ input:focus, select:focus {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.btn * {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .btn:hover {
@@ -690,6 +699,7 @@ input:focus, select:focus {
   flex-direction: column;
   gap: 1rem;
   transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
 }
 
 .goal-card:hover {
@@ -764,10 +774,24 @@ input:focus, select:focus {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  position: relative;
+  z-index: 5;
 }
 
 .goal-add-savings input {
   flex: 1;
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.goal-add-savings .btn,
+.goal-delete {
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Dashboard Goals Mini */

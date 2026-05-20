@@ -101,6 +101,11 @@ const Goals = () => {
     }
   };
 
+  const submitSavingsForm = (event) => {
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
+
   const handleDelete = async (goalId) => {
     if (!confirm('Delete this goal?')) return;
     const goal = goals.find(g => g.id === goalId);
@@ -237,7 +242,12 @@ const Goals = () => {
                     value={addAmounts[goal.id] || ''}
                     onChange={e => setAddAmounts({ ...addAmounts, [goal.id]: e.target.value })}
                   />
-                  <button type="submit" className="btn btn--dark">
+                  <button
+                    type="submit"
+                    className="btn btn--dark"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={submitSavingsForm}
+                  >
                     <BanknotesIcon width={16} />
                     <span>Add</span>
                   </button>
