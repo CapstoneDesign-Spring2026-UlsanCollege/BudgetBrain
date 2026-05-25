@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "node -e \"console.log('Backend has no separate build step')\"",
     "start": "node server.js",
     "test": "node --test test/*.test.js"
   },
