@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/react/24/solid';
 import api from '../api';
+import securityResetImage from '../assets/security-reset.webp';
 import './Auth.css';
 
 const ForgotPassword = () => {
@@ -88,7 +89,7 @@ const ForgotPassword = () => {
       <section className="auth-illustration-section">
         <div className="illustration-glow"></div>
         <img
-          src="https://illustrations.popsy.co/amber/privacy-policy.svg"
+          src={securityResetImage}
           alt="Security illustration"
           className="floating-illustration"
         />

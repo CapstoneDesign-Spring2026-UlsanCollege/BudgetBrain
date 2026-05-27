@@ -9,6 +9,7 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/solid';
 import api from '../api';
+import securityResetImage from '../assets/security-reset.webp';
 import './Auth.css';
 
 const passwordRules = [
@@ -143,7 +144,7 @@ const ResetPassword = () => {
       <section className="auth-illustration-section">
         <div className="illustration-glow"></div>
         <img
-          src="https://illustrations.popsy.co/amber/key.svg"
+          src={securityResetImage}
           alt="Password reset illustration"
           className="floating-illustration"
         />

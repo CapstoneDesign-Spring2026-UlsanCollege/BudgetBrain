@@ -266,11 +266,13 @@
 
 .floating-illustration {
   max-width: 75%;
+  width: min(560px, 78%);
   height: auto;
   animation: float 6s ease-in-out infinite;
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  border-radius: 24px;
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.38));
 }
 
 @keyframes float {
