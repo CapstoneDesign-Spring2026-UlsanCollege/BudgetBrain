@@ -1,9 +1,6 @@
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
 const { app, connectDB, validateConfig } = require('../backend/server');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (!req.url.startsWith('/api')) {
     req.url = '/api' + req.url;
   }
@@ -21,4 +18,4 @@ export default async function handler(req, res) {
   }
 
   app(req, res);
-}
+};
