@@ -44,22 +44,20 @@ function validateCredentials({ email, password }) {
   return { email: normalizedEmail, password };
 }
 
-function createResetToken() {
-  const token = crypto.randomBytes(32).toString('hex');
+function hashSecret(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function createResetCode() {
+  const code = String(crypto.randomInt(100000, 1000000));
   return {
-    token,
-    tokenHash: crypto.createHash('sha256').update(token).digest('hex'),
-    expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    code,
+    codeHash: hashSecret(code),
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   };
 }
 
-function buildResetUrl(req, token) {
-  const configuredBase = cleanString(process.env.PASSWORD_RESET_BASE_URL || process.env.CLIENT_ORIGIN);
-  const origin = configuredBase || `${req.protocol}://${req.get('host')}`;
-  return `${origin.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
-}
-
-async function sendPasswordResetEmail(to, resetUrl) {
+async function sendEmail({ to, subject, html }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
 
@@ -72,22 +70,43 @@ async function sendPasswordResetEmail(to, resetUrl) {
     body: JSON.stringify({
       from: process.env.PASSWORD_RESET_FROM || 'BudgetBrain <onboarding@resend.dev>',
       to,
-      subject: 'Reset your BudgetBrain password',
-      html: `
-        <p>You requested a BudgetBrain password reset.</p>
-        <p><a href="${resetUrl}">Reset your password</a></p>
-        <p>This link expires in 30 minutes. If you did not request this, you can ignore this email.</p>
-      `,
+      subject,
+      html,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Password reset email failed with status ${response.status}`);
+    throw new Error(`Email delivery failed with status ${response.status}`);
   }
   return true;
 }
 
-const resetRequestedMessage = 'If an account exists for that email, a password reset link has been sent.';
+async function sendPasswordResetEmail(to, code) {
+  return sendEmail({
+    to,
+    subject: 'Your BudgetBrain password reset code',
+    html: `
+      <p>You requested a BudgetBrain password reset.</p>
+      <p>Your reset code is:</p>
+      <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px;">${code}</p>
+      <p>This code expires in 10 minutes. If you did not request this, you can ignore this email.</p>
+    `,
+  });
+}
+
+async function sendWelcomeEmail(user) {
+  return sendEmail({
+    to: user.email,
+    subject: 'Welcome to BudgetBrain',
+    html: `
+      <p>Hi ${user.name},</p>
+      <p>Your BudgetBrain account was created successfully.</p>
+      <p>If this was not you, reset your password immediately from the login page.</p>
+    `,
+  });
+}
+
+const resetRequestedMessage = 'If an account exists for that email, a password reset code has been sent.';
 
 // @route   POST api/auth/register
 // @desc    Register user
@@ -115,6 +134,9 @@ router.post('/register', async (req, res) => {
     user.password = await bcrypt.hash(credentials.password, salt);
 
     await user.save();
+    sendWelcomeEmail(user).catch((emailErr) => {
+      console.warn(`Welcome email failed: ${emailErr.message}`);
+    });
 
     const payload = {
       user: {
@@ -175,30 +197,34 @@ router.post('/forgot-password', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email }).select('+resetPasswordToken +resetPasswordExpires');
+    const user = await User.findOne({ email }).select('+resetPasswordToken +resetPasswordExpires +resetPasswordAttempts');
     if (!user) {
       return res.json({ msg: resetRequestedMessage });
     }
 
-    const reset = createResetToken();
-    const resetUrl = buildResetUrl(req, reset.token);
-    user.resetPasswordToken = reset.tokenHash;
+    const reset = createResetCode();
+    user.resetPasswordToken = reset.codeHash;
     user.resetPasswordExpires = reset.expiresAt;
+    user.resetPasswordAttempts = 0;
     await user.save();
 
     let emailSent = false;
     try {
-      emailSent = await sendPasswordResetEmail(user.email, resetUrl);
+      emailSent = await sendPasswordResetEmail(user.email, reset.code);
     } catch (emailErr) {
       user.resetPasswordToken = null;
       user.resetPasswordExpires = null;
+      user.resetPasswordAttempts = 0;
       await user.save();
       throw emailErr;
     }
 
     const body = { msg: resetRequestedMessage };
+    if (!emailSent && (process.env.NODE_ENV === 'production' || process.env.VERCEL)) {
+      return sendError(res, 503, 'Password reset email is not configured. Please contact support.');
+    }
     if (!emailSent && process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-      body.resetUrl = resetUrl;
+      body.resetCode = reset.code;
     }
     res.json(body);
   } catch (err) {
@@ -207,30 +233,58 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // @route   POST api/auth/reset-password
-// @desc    Reset password with token
+// @desc    Reset password with email code
 // @access  Public
 router.post('/reset-password', async (req, res) => {
   const token = cleanString(req.body.token);
+  const email = normalizeEmail(req.body.email);
+  const code = cleanString(req.body.code).replace(/\s/g, '');
   const { password } = req.body;
-  if (!token) return sendError(res, 400, 'Password reset token is required.');
+  if (!token && (!email || !email.includes('@') || !/^\d{6}$/.test(code))) {
+    return sendError(res, 400, 'A valid email and 6-digit reset code are required.');
+  }
   const passwordError = validatePassword(password, 'New password');
   if (passwordError) return sendError(res, 400, passwordError);
 
   try {
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const tokenHash = hashSecret(token || code);
+    const lookup = token
+      ? {
+          resetPasswordToken: tokenHash,
+          resetPasswordExpires: { $gt: new Date() },
+        }
+      : {
+          email,
+          resetPasswordToken: tokenHash,
+          resetPasswordExpires: { $gt: new Date() },
+        };
+
+    const userForEmail = token ? null : await User.findOne({ email }).select('+resetPasswordToken +resetPasswordExpires +resetPasswordAttempts');
+    if (userForEmail && userForEmail.resetPasswordAttempts >= 5) {
+      userForEmail.resetPasswordToken = null;
+      userForEmail.resetPasswordExpires = null;
+      userForEmail.resetPasswordAttempts = 0;
+      await userForEmail.save();
+      return sendError(res, 400, 'Too many reset attempts. Please request a new code.');
+    }
+
     const user = await User.findOne({
-      resetPasswordToken: tokenHash,
-      resetPasswordExpires: { $gt: new Date() },
-    }).select('+resetPasswordToken +resetPasswordExpires');
+      ...lookup,
+    }).select('+resetPasswordToken +resetPasswordExpires +resetPasswordAttempts');
 
     if (!user) {
-      return sendError(res, 400, 'Password reset link is invalid or expired.');
+      if (userForEmail) {
+        userForEmail.resetPasswordAttempts = (userForEmail.resetPasswordAttempts || 0) + 1;
+        await userForEmail.save();
+      }
+      return sendError(res, 400, 'Password reset code is invalid or expired.');
     }
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
+    user.resetPasswordAttempts = 0;
     await user.save();
     res.json({ msg: 'Password reset successfully. You can log in with your new password.' });
   } catch (err) {
@@ -306,6 +360,7 @@ router.put('/password', auth, async (req, res) => {
 
 module.exports = router;
 module.exports._internals = {
-  createResetToken,
+  createResetCode,
+  hashSecret,
   validatePassword,
 };

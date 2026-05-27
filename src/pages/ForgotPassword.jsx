@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   ArrowLeftIcon,
@@ -12,20 +12,24 @@ import securityResetImage from '../assets/security-reset.webp';
 import './Auth.css';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [resetUrl, setResetUrl] = useState('');
+  const [resetCode, setResetCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setResetUrl('');
+    setResetCode('');
     try {
       const res = await api.post('/auth/forgot-password', { email });
       setMessage(res.data.msg);
-      setResetUrl(res.data.resetUrl || '');
-      toast.success('Password reset request received.');
+      setResetCode(res.data.resetCode || '');
+      toast.success('Password reset code sent.');
+      if (!res.data.resetCode) {
+        navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+      }
     } catch (err) {
       toast.error(err.response?.data?.msg || 'Could not start password reset.');
     } finally {
@@ -39,7 +43,7 @@ const ForgotPassword = () => {
         <div className="auth-form-wrapper">
           <div className="auth-header">
             <h1>Reset Password</h1>
-            <p>Enter your account email and we will send a secure reset link if the account exists.</p>
+            <p>Enter your account email and we will send a secure 6-digit code if the account exists.</p>
           </div>
 
           <form onSubmit={onSubmit}>
@@ -60,11 +64,11 @@ const ForgotPassword = () => {
               {isLoading ? (
                 <>
                   <ArrowPathIcon width={20} className="spinner" />
-                  <span>Sending link...</span>
+                  <span>Sending code...</span>
                 </>
               ) : (
                 <>
-                  <span>Send Reset Link</span>
+                  <span>Send Reset Code</span>
                   <ShieldCheckIcon width={20} />
                 </>
               )}
@@ -72,9 +76,9 @@ const ForgotPassword = () => {
           </form>
 
           {message && <p className="auth-status">{message}</p>}
-          {resetUrl && (
+          {resetCode && (
             <p className="auth-status">
-              Local reset link: <a href={resetUrl} className="auth-link">Open reset page</a>
+              Local reset code: <strong>{resetCode}</strong>. <Link to={`/reset-password?email=${encodeURIComponent(email)}`} className="auth-link">Enter code</Link>
             </p>
           )}
 

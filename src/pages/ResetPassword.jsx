@@ -22,7 +22,12 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
-  const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({
+    email: searchParams.get('email') || '',
+    code: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,8 +41,8 @@ const ResetPassword = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!token) {
-      toast.error('Password reset link is missing a token.');
+    if (!token && (!formData.email || formData.code.replace(/\s/g, '').length !== 6)) {
+      toast.error('Enter your email and 6-digit reset code.');
       return;
     }
     if (!passwordReady) {
@@ -51,7 +56,12 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
-      const res = await api.post('/auth/reset-password', { token, password: formData.password });
+      const res = await api.post('/auth/reset-password', {
+        token,
+        email: formData.email,
+        code: formData.code.replace(/\s/g, ''),
+        password: formData.password,
+      });
       toast.success(res.data.msg || 'Password reset successfully.');
       navigate('/login');
     } catch (err) {
@@ -67,16 +77,43 @@ const ResetPassword = () => {
         <div className="auth-form-wrapper">
           <div className="auth-header">
             <h1>Choose New Password</h1>
-            <p>Create a stronger password for your BudgetBrain account.</p>
+            <p>Type the 6-digit code from your email and create a stronger password.</p>
           </div>
 
-          {!token && (
-            <p className="auth-status auth-status-error">
-              This reset link is missing a token. Request a new link from the forgot password page.
-            </p>
-          )}
-
           <form onSubmit={onSubmit}>
+            {!token && (
+              <>
+                <div className="auth-input-group">
+                  <LockClosedIcon width={20} className="input-icon" />
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    name="email"
+                    value={formData.email}
+                    onChange={onChange}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+
+                <div className="auth-input-group">
+                  <LockClosedIcon width={20} className="input-icon" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength="6"
+                    placeholder="6-digit code"
+                    name="code"
+                    value={formData.code}
+                    onChange={onChange}
+                    autoComplete="one-time-code"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
             <div className="auth-input-group">
               <LockClosedIcon width={20} className="input-icon" />
               <input
@@ -120,7 +157,7 @@ const ResetPassword = () => {
               ))}
             </ul>
 
-            <button type="submit" className="auth-btn" disabled={isLoading || !token}>
+            <button type="submit" className="auth-btn" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <ArrowPathIcon width={20} className="spinner" />

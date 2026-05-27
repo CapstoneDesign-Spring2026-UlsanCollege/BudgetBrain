@@ -21,9 +21,8 @@ The app is deployed on Vercel at https://budgetbrain.vercel.app.
 |---|---|
 | `MONGO_URI` | MongoDB Atlas connection string |
 | `JWT_SECRET` | Secret key for JWT tokens |
-| `RESEND_API_KEY` | Optional API key for production password reset email delivery |
-| `PASSWORD_RESET_FROM` | Optional sender address for password reset email |
-| `PASSWORD_RESET_BASE_URL` | Optional frontend URL used in reset links |
+| `RESEND_API_KEY` | Required for production welcome emails and password reset code delivery |
+| `PASSWORD_RESET_FROM` | Required sender address for welcome and password reset email |
 
 ## How It Works
 
@@ -50,7 +49,6 @@ JWT_SECRET=your_random_secret
 PORT=5000
 RESEND_API_KEY=re_...
 PASSWORD_RESET_FROM=BudgetBrain <onboarding@resend.dev>
-PASSWORD_RESET_BASE_URL=https://budgetbrain.vercel.app
 ```
 
 ## Build

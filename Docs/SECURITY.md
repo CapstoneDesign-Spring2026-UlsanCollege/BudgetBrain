@@ -6,7 +6,7 @@
 - JWT tokens for stateless authentication
 - Tokens expire and require re-login
 - Login returns a generic invalid-credentials message to reduce account enumeration
-- Forgot-password reset tokens are stored hashed and expire after 30 minutes
+- Forgot-password reset codes are stored hashed, expire after 10 minutes, and are limited to 5 attempts
 
 ## API Security
 
@@ -38,7 +38,6 @@ JWT_SECRET=your_strong_jwt_secret
 PORT=5000
 RESEND_API_KEY=optional_for_password_reset_email
 PASSWORD_RESET_FROM=optional_sender_address
-PASSWORD_RESET_BASE_URL=optional_frontend_reset_url
 ```
 
 Never commit these to the repository.
