@@ -57,7 +57,9 @@ const Profile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) return toast.error('Passwords do not match');
-    if (newPassword.length < 6) return toast.error('Password must be at least 6 characters');
+    if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      return toast.error('Password must be at least 8 characters and include a letter and number');
+    }
     try {
       await api.put('/auth/password', { currentPassword, newPassword });
       setCurrentPassword('');
@@ -154,7 +156,8 @@ const Profile = () => {
         </div>
         <div className="grid-xs">
           <label>New Password</label>
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} minLength="6" required />
+          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} minLength="8" required />
+          <small style={{ color: 'hsl(215 20% 50%)' }}>Use at least 8 characters with a letter and number.</small>
         </div>
         <div className="grid-xs">
           <label>Confirm New Password</label>

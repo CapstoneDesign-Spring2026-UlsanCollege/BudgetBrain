@@ -25,6 +25,16 @@ const UserSchema = new mongoose.Schema({
     default: '\uD83C\uDFAF',
     maxlength: 16
   },
+  resetPasswordToken: {
+    type: String,
+    default: null,
+    select: false
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null,
+    select: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -32,5 +42,6 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
 module.exports = mongoose.model('User', UserSchema);

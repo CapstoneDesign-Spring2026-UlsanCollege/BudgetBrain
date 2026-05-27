@@ -172,12 +172,22 @@
   font-size: 0.95rem;
 }
 
+.auth-form-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.4rem 0 1.25rem;
+  font-size: 0.92rem;
+}
+
 .auth-link {
   color: hsl(var(--accent));
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .auth-link::after {
@@ -197,6 +207,49 @@
 
 .auth-link:hover::after {
   width: 100%;
+}
+
+.auth-status {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid hsl(var(--accent) / 0.28);
+  border-radius: var(--radius);
+  background: hsl(var(--accent) / 0.08);
+  color: hsl(var(--text));
+  line-height: 1.5;
+}
+
+.auth-status-error {
+  border-color: hsl(0 84% 60% / 0.35);
+  background: hsl(0 84% 60% / 0.08);
+}
+
+.password-rules {
+  display: grid;
+  gap: 0.45rem;
+  margin: -0.35rem 0 1.1rem;
+  padding: 0;
+  list-style: none;
+  color: hsl(var(--muted));
+  font-size: 0.9rem;
+}
+
+.password-rules li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.password-rules svg {
+  color: hsl(var(--muted) / 0.45);
+}
+
+.password-rules li.passed {
+  color: hsl(var(--accent-light));
+}
+
+.password-rules li.passed svg {
+  color: hsl(var(--accent));
 }
 
 /* --- Illustration Section --- */

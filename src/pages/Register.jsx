@@ -8,7 +8,8 @@ import {
   UserIcon,
   EyeIcon, 
   EyeSlashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/solid';
 import api from '../api';
 import './Auth.css';
@@ -18,17 +19,25 @@ const getAuthErrorMessage = (err) =>
   err.response?.data?.error ||
   'Registration failed. Please try again.';
 
+const passwordRules = [
+  { label: 'At least 8 characters', test: (value) => value.length >= 8 },
+  { label: 'Includes a letter', test: (value) => /[A-Za-z]/.test(value) },
+  { label: 'Includes a number', test: (value) => /\d/.test(value) },
+];
+
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { name, email, password } = formData;
+  const { name, email, password, confirmPassword } = formData;
+  const passwordReady = passwordRules.every((rule) => rule.test(password));
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -37,8 +46,12 @@ const Register = () => {
   const onSubmit = async e => {
     e.preventDefault();
     
-    if (password.length < 6) {
-      toast.warning("Password must be at least 6 characters long.");
+    if (!passwordReady) {
+      toast.warning("Password must be at least 8 characters and include a letter and number.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.warning("Passwords do not match.");
       return;
     }
 
@@ -73,6 +86,7 @@ const Register = () => {
                 name="name"
                 value={name}
                 onChange={onChange}
+                autoComplete="name"
                 required
               />
             </div>
@@ -85,6 +99,7 @@ const Register = () => {
                 name="email"
                 value={email}
                 onChange={onChange}
+                autoComplete="email"
                 required
               />
             </div>
@@ -93,10 +108,11 @@ const Register = () => {
               <LockClosedIcon width={20} className="input-icon" />
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Password (min. 6 chars)"
+                placeholder="Password"
                 name="password"
                 value={password}
                 onChange={onChange}
+                autoComplete="new-password"
                 required
               />
               <button 
@@ -108,6 +124,28 @@ const Register = () => {
                 {showPassword ? <EyeSlashIcon width={20} /> : <EyeIcon width={20} />}
               </button>
             </div>
+
+            <div className="auth-input-group">
+              <LockClosedIcon width={20} className="input-icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Confirm password"
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={onChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+
+            <ul className="password-rules">
+              {passwordRules.map((rule) => (
+                <li key={rule.label} className={rule.test(password) ? 'passed' : ''}>
+                  <CheckCircleIcon width={15} />
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
 
             <button type="submit" className="auth-btn" disabled={isLoading}>
               {isLoading ? (

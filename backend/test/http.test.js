@@ -11,6 +11,7 @@ const {
   parsePositiveNumber,
 } = require('../utils/http');
 const exchange = require('../routes/exchange');
+const authRoutes = require('../routes/auth');
 
 function mockResponse() {
   return {
@@ -48,6 +49,19 @@ test('validates supported exchange currencies', () => {
   assert.equal(isSupportedCurrency('USD'), true);
   assert.equal(isSupportedCurrency('DOGE'), false);
   assert.equal(SUPPORTED_CURRENCIES.includes('KRW'), true);
+});
+
+test('validates stronger passwords and reset token shape', () => {
+  const { validatePassword, createResetToken } = authRoutes._internals;
+
+  assert.equal(validatePassword('short1'), 'Password must be at least 8 characters.');
+  assert.equal(validatePassword('password'), 'Password must include at least one letter and one number.');
+  assert.equal(validatePassword('password1'), null);
+
+  const reset = createResetToken();
+  assert.equal(reset.token.length, 64);
+  assert.equal(reset.tokenHash.length, 64);
+  assert.equal(reset.expiresAt > new Date(), true);
 });
 
 test('auth middleware accepts Authorization bearer tokens', () => {

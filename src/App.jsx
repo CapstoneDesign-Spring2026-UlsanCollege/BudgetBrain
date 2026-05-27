@@ -10,6 +10,8 @@ import { deleteBudget } from "./actions/deleteBudget";
 import Error from "./pages/Error";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 import { dashboardAction, dashboardLoader } from "./pages/Dashboard";
@@ -55,6 +57,8 @@ const protectedLoader = (loaderFn) => async (args) => {
 const router = createBrowserRouter([
   { path: "/login", element: <Login />, errorElement: <Error /> },
   { path: "/register", element: <Register />, errorElement: <Error /> },
+  { path: "/forgot-password", element: <ForgotPassword />, errorElement: <Error /> },
+  { path: "/reset-password", element: <ResetPassword />, errorElement: <Error /> },
   {
     path: "/",
     id: "main",

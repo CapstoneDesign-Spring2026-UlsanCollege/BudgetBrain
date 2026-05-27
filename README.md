@@ -5,6 +5,7 @@ BudgetBrain is a full-stack budget planning web app built with React and Express
 ## Features
 
 - Register and login with JWT authentication
+- Reset forgotten passwords through secure, expiring reset links
 - Create, edit, and delete budgets by category
 - Add, edit, and delete expenses within budgets
 - Set savings goals and track progress
@@ -57,6 +58,10 @@ https://budgetbrain.vercel.app/
    # Optional: override the live exchange-rate provider URL.
    # Use {base} where the base currency code should be inserted.
    EXCHANGE_RATE_API_URL=https://open.er-api.com/v6/latest/{base}
+   # Optional: enable production forgot-password email delivery through Resend.
+   RESEND_API_KEY=your_resend_api_key
+   PASSWORD_RESET_FROM=BudgetBrain <onboarding@resend.dev>
+   PASSWORD_RESET_BASE_URL=https://budgetbrain.vercel.app
    ```
 
 ## Usage
@@ -77,7 +82,7 @@ https://budgetbrain.vercel.app/
 ## Deployment
 
 Deployed on Vercel. Required env vars: `MONGO_URI`, `JWT_SECRET`.
-Optional env var: `EXCHANGE_RATE_API_URL` for overriding the live currency provider.
+Optional env vars: `EXCHANGE_RATE_API_URL` for overriding the live currency provider, and `RESEND_API_KEY`, `PASSWORD_RESET_FROM`, `PASSWORD_RESET_BASE_URL` for forgot-password emails.
 
 Build: `npm run build`  
 Output: `dist`

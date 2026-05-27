@@ -67,6 +67,7 @@ const Login = () => {
                 name="email"
                 value={email}
                 onChange={onChange}
+                autoComplete="email"
                 required
               />
             </div>
@@ -79,6 +80,7 @@ const Login = () => {
                 name="password"
                 value={password}
                 onChange={onChange}
+                autoComplete="current-password"
                 required
               />
               <button
@@ -89,6 +91,10 @@ const Login = () => {
               >
                 {showPassword ? <EyeSlashIcon width={20} /> : <EyeIcon width={20} />}
               </button>
+            </div>
+
+            <div className="auth-form-meta">
+              <Link to="/forgot-password" className="auth-link">Forgot password?</Link>
             </div>
 
             <button type="submit" className="auth-btn" disabled={isLoading}>
