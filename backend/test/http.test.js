@@ -2,6 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
+const createRateLimiter = require('../middleware/rateLimit');
+const { isOriginAllowed } = require('../server');
 const {
   cleanString,
   isValidColor,
@@ -19,6 +21,10 @@ function mockResponse() {
     body: null,
     status(code) {
       this.statusCode = code;
+      return this;
+    },
+    setHeader(name, value) {
+      this.headers = { ...(this.headers || {}), [name]: value };
       return this;
     },
     json(payload) {
@@ -102,4 +108,26 @@ test('auth middleware rejects missing and expired tokens consistently', () => {
   auth(expiredReq, expiredRes, () => {});
   assert.equal(expiredRes.statusCode, 401);
   assert.equal(expiredRes.body.msg, 'Your session has expired. Please log in again.');
+});
+
+test('production CORS allows only trusted BudgetBrain origins by default', () => {
+  assert.equal(isOriginAllowed(undefined, ['https://budgetbrain.vercel.app']), true);
+  assert.equal(isOriginAllowed('https://budgetbrain.vercel.app', ['https://budgetbrain.vercel.app']), true);
+  assert.equal(isOriginAllowed('https://evil.example.com', ['https://budgetbrain.vercel.app']), false);
+});
+
+test('rate limiter keys requests by forwarded client IP', () => {
+  const limiter = createRateLimiter({ windowMs: 1000, max: 1, message: 'Too many requests.' });
+  const firstReq = { headers: { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' }, ip: '10.0.0.5' };
+  const secondReq = { headers: { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' }, ip: '10.0.0.6' };
+  const firstRes = mockResponse();
+  const secondRes = mockResponse();
+  let nextCount = 0;
+
+  limiter(firstReq, firstRes, () => { nextCount += 1; });
+  limiter(secondReq, secondRes, () => { nextCount += 1; });
+
+  assert.equal(nextCount, 1);
+  assert.equal(secondRes.statusCode, 429);
+  assert.equal(secondRes.body.msg, 'Too many requests.');
 });

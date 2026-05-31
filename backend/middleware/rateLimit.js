@@ -3,7 +3,12 @@ function createRateLimiter({ windowMs, max, message }) {
 
   return function rateLimit(req, res, next) {
     const now = Date.now();
-    const key = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const key = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)
+      ?.split(',')[0]
+      ?.trim()
+      || req.ip
+      || 'unknown';
     const current = hits.get(key);
 
     if (!current || current.resetAt <= now) {

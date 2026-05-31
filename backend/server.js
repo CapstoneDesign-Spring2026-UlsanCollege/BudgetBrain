@@ -16,16 +16,34 @@ const exchangeRoutes = require('./routes/exchange');
 const app = express();
 let connectionPromise = null;
 let lastConnectionCheck = 0;
+const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+function buildAllowedOrigins() {
+  const configured = (process.env.CLIENT_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configured.length > 0) return configured;
+
+  return isProduction
+    ? ['https://budgetbrain.vercel.app']
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+}
+
+function isOriginAllowed(origin, allowedOrigins = buildAllowedOrigins()) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  return Boolean(isProduction && /^https:\/\/budgetbrain-[a-z0-9-]+-biidhus-projects\.vercel\.app$/i.test(origin));
+}
+
+const allowedOrigins = buildAllowedOrigins();
 
 app.use(securityHeaders);
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (isOriginAllowed(origin, allowedOrigins)) {
       return callback(null, true);
     }
     return callback(new Error('Origin is not allowed by CORS'));
@@ -64,9 +82,6 @@ app.use((err, req, res, next) => {
       : 'Server Error';
   res.status(status).json({ msg: message });
 });
-
-const PORT = process.env.PORT || 5000;
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
 
 function requireEnv(name) {
   if (!process.env[name]) {
@@ -127,4 +142,4 @@ if (require.main === module) {
 
 app.get('/', (req, res) => res.send('BudgetBrain API is running'));
 
-module.exports = { app, connectDB, validateConfig };
+module.exports = { app, buildAllowedOrigins, connectDB, isOriginAllowed, validateConfig };
