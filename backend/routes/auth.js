@@ -57,9 +57,17 @@ function createResetCode() {
   };
 }
 
+function getEmailConfigStatus() {
+  return {
+    hasResendKey: Boolean(process.env.RESEND_API_KEY),
+    hasSender: Boolean(process.env.PASSWORD_RESET_FROM),
+  };
+}
+
 async function sendEmail({ to, subject, html }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
+  const from = process.env.PASSWORD_RESET_FROM;
+  if (!apiKey || !from) return false;
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -68,7 +76,7 @@ async function sendEmail({ to, subject, html }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.PASSWORD_RESET_FROM || 'BudgetBrain <onboarding@resend.dev>',
+      from,
       to,
       subject,
       html,
@@ -221,7 +229,15 @@ router.post('/forgot-password', async (req, res) => {
 
     const body = { msg: resetRequestedMessage };
     if (!emailSent && (process.env.NODE_ENV === 'production' || process.env.VERCEL)) {
-      return sendError(res, 503, 'Password reset email is not configured. Please contact support.');
+      const missing = [];
+      const emailConfig = getEmailConfigStatus();
+      if (!emailConfig.hasResendKey) missing.push('RESEND_API_KEY');
+      if (!emailConfig.hasSender) missing.push('PASSWORD_RESET_FROM');
+      return sendError(
+        res,
+        503,
+        `Password reset email is not configured. Missing Vercel env: ${missing.join(', ')}.`
+      );
     }
     if (!emailSent && process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
       body.resetCode = reset.code;
@@ -361,6 +377,7 @@ router.put('/password', auth, async (req, res) => {
 module.exports = router;
 module.exports._internals = {
   createResetCode,
+  getEmailConfigStatus,
   hashSecret,
   validatePassword,
 };

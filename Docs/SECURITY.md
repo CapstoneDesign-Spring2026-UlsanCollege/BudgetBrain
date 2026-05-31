@@ -36,8 +36,8 @@
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_strong_jwt_secret
 PORT=5000
-RESEND_API_KEY=optional_for_password_reset_email
-PASSWORD_RESET_FROM=optional_sender_address
+RESEND_API_KEY=required_for_production_email_delivery
+PASSWORD_RESET_FROM=verified_sender_address
 ```
 
 Never commit these to the repository.

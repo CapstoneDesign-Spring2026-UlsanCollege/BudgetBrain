@@ -58,9 +58,9 @@ https://budgetbrain.vercel.app/
    # Optional: override the live exchange-rate provider URL.
    # Use {base} where the base currency code should be inserted.
    EXCHANGE_RATE_API_URL=https://open.er-api.com/v6/latest/{base}
-   # Optional: enable production forgot-password email delivery through Resend.
+   # Required in production for welcome emails and forgot-password reset codes.
    RESEND_API_KEY=your_resend_api_key
-   PASSWORD_RESET_FROM=BudgetBrain <onboarding@resend.dev>
+   PASSWORD_RESET_FROM=BudgetBrain <verified-sender@yourdomain.com>
    ```
 
 ## Usage

@@ -48,8 +48,10 @@ MONGO_URI=mongodb+srv://...
 JWT_SECRET=your_random_secret
 PORT=5000
 RESEND_API_KEY=re_...
-PASSWORD_RESET_FROM=BudgetBrain <onboarding@resend.dev>
+PASSWORD_RESET_FROM=BudgetBrain <verified-sender@yourdomain.com>
 ```
+
+For Resend, `PASSWORD_RESET_FROM` must be a sender address that your Resend account is allowed to use. In production, add both `RESEND_API_KEY` and `PASSWORD_RESET_FROM` in Vercel, then redeploy.
 
 ## Build
 
