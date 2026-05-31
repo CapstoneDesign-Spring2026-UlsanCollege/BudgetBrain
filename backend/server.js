@@ -28,14 +28,21 @@ function buildAllowedOrigins() {
   if (configured.length > 0) return configured;
 
   return isProduction
-    ? ['https://budgetbrain.vercel.app']
+    ? [
+        'https://budgetbrain.vercel.app',
+        'https://budget-brain-rho.vercel.app',
+        'https://budget-brain-biidhus-projects.vercel.app',
+      ]
     : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 }
 
 function isOriginAllowed(origin, allowedOrigins = buildAllowedOrigins()) {
   if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  return Boolean(isProduction && /^https:\/\/budgetbrain-[a-z0-9-]+-biidhus-projects\.vercel\.app$/i.test(origin));
+  return Boolean(
+    isProduction
+      && /^https:\/\/budget-?brain-[a-z0-9-]+-biidhus-projects\.vercel\.app$/i.test(origin)
+  );
 }
 
 const allowedOrigins = buildAllowedOrigins();
@@ -58,6 +65,12 @@ const authLimiter = createRateLimiter({
 });
 
 app.get('/api/health', async (req, res) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error(`Health check database connection failed: ${err.message}`);
+  }
+
   const databaseReady = mongoose.connection.readyState === 1;
   res.status(databaseReady ? 200 : 503).json({
     status: databaseReady ? 'ok' : 'degraded',
