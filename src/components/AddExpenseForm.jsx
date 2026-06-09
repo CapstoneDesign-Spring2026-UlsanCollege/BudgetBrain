@@ -66,19 +66,33 @@ const AddExpenseForm = ({ budgets }) => {
   const isSubmitting = fetcher.state === "submitting";
   const [isScanningReceipt, setIsScanningReceipt] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
+  const [categoryChoice, setCategoryChoice] = useState("other");
+  const [customCategory, setCustomCategory] = useState("");
   const formRef = useRef();
   const focusRef = useRef();
   const amountRef = useRef();
-  const categoryRef = useRef();
+  const categorySelectRef = useRef();
+  const customCategoryRef = useRef();
   const budgetRef = useRef();
   const receiptInputRef = useRef();
+  const previousFetcherState = useRef(fetcher.state);
+
+  const finalCategory = categoryChoice === "custom"
+    ? customCategory.trim()
+    : categoryChoice;
 
   useEffect(() => {
-    if (!isSubmitting && !isScanningReceipt && formRef.current && focusRef.current) {
+    const justSubmitted = previousFetcherState.current === "submitting" && fetcher.state === "idle";
+
+    if (justSubmitted && !isScanningReceipt && formRef.current && focusRef.current) {
       formRef.current.reset();
+      setCategoryChoice("other");
+      setCustomCategory("");
       focusRef.current.focus();
     }
-  }, [isSubmitting, isScanningReceipt]);
+
+    previousFetcherState.current = fetcher.state;
+  }, [fetcher.state, isScanningReceipt]);
 
   const parseReceiptText = (text) => {
     const lines = text
@@ -166,7 +180,14 @@ const AddExpenseForm = ({ budgets }) => {
 
       if (focusRef.current) focusRef.current.value = parsed.name;
       if (amountRef.current) amountRef.current.value = Math.round(parsed.amount);
-      if (categoryRef.current) categoryRef.current.value = parsed.category;
+      const knownCategory = EXPENSE_CATEGORIES.some(([key]) => key === parsed.category);
+      if (knownCategory) {
+        setCategoryChoice(parsed.category);
+        setCustomCategory("");
+      } else {
+        setCategoryChoice("custom");
+        setCustomCategory(parsed.category);
+      }
       if (budgetRef.current && !budgetRef.current.value) {
         budgetRef.current.value = budgets[0].id || budgets[0]._id;
       }
@@ -220,24 +241,32 @@ const AddExpenseForm = ({ budgets }) => {
             </div>
             <div className="grid-xs">
               <label htmlFor="newExpenseCategory">Type</label>
-              <input
-                type="text"
-                name="category"
+              <select
                 id="newExpenseCategory"
-                list="expenseCategoryOptions"
-                placeholder="e.g., food or college fees"
-                defaultValue="other"
-                ref={categoryRef}
-                maxLength={40}
+                value={categoryChoice}
+                onChange={(event) => setCategoryChoice(event.target.value)}
+                ref={categorySelectRef}
                 required
-              />
-              <datalist id="expenseCategoryOptions">
+              >
                 {EXPENSE_CATEGORIES.map(([key, [icon, label]]) => (
                   <option key={key} value={key}>
                     {icon} {label}
                   </option>
                 ))}
-              </datalist>
+                <option value="custom">+ Custom type</option>
+              </select>
+              {categoryChoice === "custom" && (
+                <input
+                  type="text"
+                  placeholder="e.g., college fees"
+                  value={customCategory}
+                  onChange={(event) => setCustomCategory(event.target.value)}
+                  ref={customCategoryRef}
+                  maxLength={40}
+                  required
+                />
+              )}
+              <input type="hidden" name="category" value={finalCategory || "other"} />
             </div>
             <div className="grid-xs" hidden={budgets.length === 1}>
               <label htmlFor="newExpenseBudget">Budget</label>
