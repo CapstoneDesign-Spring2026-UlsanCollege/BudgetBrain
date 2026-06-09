@@ -1,0 +1,20 @@
+{
+  "name": "BudgetBrain",
+  "short_name": "BudgetBrain",
+  "description": "Track budgets, receipts, expenses, goals, and currency rates.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080a12",
+  "theme_color": "#080a12",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

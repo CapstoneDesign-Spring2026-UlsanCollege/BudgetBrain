@@ -220,7 +220,7 @@ const AddExpenseForm = ({ budgets }) => {
 
     try {
       const Tesseract = await loadTesseract();
-      const { data } = await Tesseract.recognize(file, "eng", {
+      const { data } = await Tesseract.recognize(imageSource, "eng", {
         logger: (message) => {
           if (message.status === "recognizing text") {
             setScanStatus(`Reading receipt ${Math.round((message.progress || 0) * 100)}%`);

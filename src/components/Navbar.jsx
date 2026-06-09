@@ -196,7 +196,7 @@ export default function Navbar({ onToggleSidebar, userName, budgets = [], expens
 
   return (
     <header className="top-navbar">
-      <button className="sidebar-toggle btn-icon" onClick={onToggleSidebar}>
+      <button className="sidebar-toggle btn-icon" onClick={onToggleSidebar} aria-label="Open navigation">
         <Bars3Icon width={24} />
       </button>
       
@@ -224,6 +224,7 @@ export default function Navbar({ onToggleSidebar, userName, budgets = [], expens
           <button 
             className={`notif-btn btn-icon ${isNotifOpen ? 'active' : ''}`}
             onClick={() => setIsNotifOpen(!isNotifOpen)}
+            aria-label="Notifications"
           >
             <BellIcon width={24} />
             {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}

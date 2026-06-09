@@ -29,7 +29,8 @@ const Main = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [, setCurrencyVersion] = useState(0);
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleSidebar = () => setIsSidebarOpen((open) => !open);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   React.useEffect(() => {
     const handleCurrencyChange = () => setCurrencyVersion((value) => value + 1);
@@ -39,8 +40,8 @@ const Main = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} budgets={budgets} expenses={expenses} userName={userName} />
-      {isSidebarOpen && <button type="button" className="sidebar-backdrop" onClick={toggleSidebar} aria-label="Close sidebar" />}
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} budgets={budgets} expenses={expenses} userName={userName} />
+      {isSidebarOpen && <button type="button" className="sidebar-backdrop" onClick={closeSidebar} aria-label="Close sidebar" />}
       
       <main className="dashboard-main">
         <Navbar onToggleSidebar={toggleSidebar} userName={userName} budgets={budgets} expenses={expenses} goals={goals} />

@@ -36,11 +36,14 @@ export default function Sidebar({ isOpen, onClose, budgets, expenses, userName }
   };
 
   const isActive = (path) => location.pathname === path ? "active" : "";
+  const closeOnMobile = () => {
+    if (isOpen) onClose();
+  };
 
   return (
     <aside className={`sidebar ${isOpen ? "show" : ""}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link to="/" className="sidebar-brand">
+        <Link to="/" className="sidebar-brand" onClick={closeOnMobile}>
           <BanknotesIcon width={32} className="brand-icon" />
           BudgetBrain
         </Link>
@@ -54,31 +57,31 @@ export default function Sidebar({ isOpen, onClose, budgets, expenses, userName }
       <nav>
         <ul>
           <li>
-            <Link to="/" className={isActive("/")}>
+            <Link to="/" className={isActive("/")} onClick={closeOnMobile}>
               <HomeIcon width={20} />
               Dashboard
             </Link>
           </li>
           <li>
-            <Link to="/expenses" className={isActive("/expenses")}>
+            <Link to="/expenses" className={isActive("/expenses")} onClick={closeOnMobile}>
               <BanknotesIcon width={20} />
               Transactions
             </Link>
           </li>
           <li>
-            <Link to="/budgets" className={isActive("/budgets")}>
+            <Link to="/budgets" className={isActive("/budgets")} onClick={closeOnMobile}>
               <WalletIcon width={20} />
               My Budgets
             </Link>
           </li>
           <li>
-            <Link to="/analytics" className={isActive("/analytics")}>
+            <Link to="/analytics" className={isActive("/analytics")} onClick={closeOnMobile}>
               <ChartPieIcon width={20} />
               Analytics
             </Link>
           </li>
           <li>
-            <Link to="/goals" className={isActive("/goals")}>
+            <Link to="/goals" className={isActive("/goals")} onClick={closeOnMobile}>
               <TrophyIcon width={20} />
               Goals
             </Link>
@@ -124,10 +127,10 @@ export default function Sidebar({ isOpen, onClose, budgets, expenses, userName }
           </div>
         </div>
         <div className="sidebar-actions">
-          <Link to="/profile" className="btn btn--outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }}>
+          <Link to="/profile" className="btn btn--outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }} onClick={closeOnMobile}>
             <UserCircleIcon width={16} /> Profile
           </Link>
-          <Link to="/settings" className="btn btn--outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }}>
+          <Link to="/settings" className="btn btn--outline" style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }} onClick={closeOnMobile}>
             <Cog8ToothIcon width={16} /> Settings
           </Link>
         </div>

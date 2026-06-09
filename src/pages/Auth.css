@@ -3,7 +3,8 @@
 .auth-container {
   display: flex;
   min-height: 100vh;
-  width: 100vw;
+  min-height: 100dvh;
+  width: 100%;
   background: hsl(var(--bkg-dark));
 }
 
@@ -335,10 +336,23 @@
 }
 
 @media (max-width: 600px) {
+  .auth-form-section {
+    justify-content: flex-start;
+    padding: max(2rem, env(safe-area-inset-top)) 1rem max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .auth-header {
+    margin-bottom: 1.5rem;
+  }
+
   .auth-header h1 {
     font-size: 2rem;
   }
   .auth-header p {
     font-size: 0.95rem;
+  }
+
+  .auth-input-group input {
+    font-size: 16px;
   }
 }
