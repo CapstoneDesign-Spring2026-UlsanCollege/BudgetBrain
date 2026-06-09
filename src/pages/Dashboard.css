@@ -692,6 +692,48 @@
   background: hsl(var(--danger) / 0.1);
 }
 
+@media (max-width: 640px) {
+  .nav-icons .dropdown-menu {
+    position: fixed;
+    top: calc(72px + env(safe-area-inset-top));
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: calc(100dvh - 92px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    margin-top: 0;
+    overflow-y: auto;
+    border-radius: 16px;
+    z-index: 120;
+  }
+
+  .user-dropdown,
+  .notif-dropdown {
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  }
+
+  .dropdown-user-info,
+  .dropdown-item {
+    min-height: 52px;
+  }
+
+  .dropdown-item {
+    justify-content: flex-start;
+    padding: 0.95rem 1rem;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+
+  .dropdown-item svg {
+    flex: 0 0 auto;
+  }
+
+  .dropdown-user-name {
+    overflow-wrap: anywhere;
+  }
+}
+
 /* --- BudgetItem CSS (Restored & Enhanced) --- */
 .budget {
   display: flex;
