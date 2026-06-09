@@ -34,4 +34,4 @@ BudgetBrain - a simple, beautiful budget planner that:
 - Frontend: React + Vite
 - Backend: Express + MongoDB
 - Auth: JWT
-- Deployment: Railway (backend) + GitHub Pages (frontend)
+- Deployment: Vercel for the full-stack app

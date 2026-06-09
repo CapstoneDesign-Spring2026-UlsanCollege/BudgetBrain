@@ -8,18 +8,16 @@
 - Frontend builds with zero errors
 
 ## What Could Improve
-- Backend deployment not yet configured
-- API URL hardcoded for localhost
-- No automated test suite
-- In-memory DB fallback means data loss on restart
+- Production email delivery still needs provider env vars
+- No full frontend automated test suite
 - Some defensive null checks needed in React components
 
 ## Action Items
-1. Deploy backend to Railway
-2. Make API URL configurable via env variable
-3. Add unit tests for API routes
-4. Add proper error boundaries in React
-5. Document API endpoints in README
+1. Keep Vercel production env vars documented
+2. Add frontend smoke tests
+3. Add proper error boundaries in React
+4. Document API endpoints in README
+5. Add monitoring for production API health
 
 ## Lessons Learned
 - Express 5.x has slightly different route matching than Express 4

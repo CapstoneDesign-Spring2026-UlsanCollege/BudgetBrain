@@ -3,12 +3,11 @@
 ## Current Blockers
 
 ### Critical
-- **GitHub Pages disabled**: Organization may have Pages disabled. Need alternative (Netlify/Vercel).
-- **Backend not deployed**: API only runs locally. Need Railway/Render setup.
+- **Production email not configured**: Password reset and welcome emails require provider env vars in Vercel.
 
 ### Medium
 - **PowerShell execution policy**: `Restricted` policy blocks `.ps1` scripts. Using `.cmd` variants as workaround.
-- **In-memory DB fallback**: Data lost on server restart. Need MongoDB Atlas configured.
+- **MongoDB Atlas access**: Production depends on Atlas network access and valid Vercel env vars.
 
 ### Low
 - **Express 5.x differences**: Route matching differs from Express 4. Tested and working.
@@ -17,11 +16,11 @@
 ## Mitigation Strategies
 | Risk | Mitigation |
 |------|-----------|
-| GitHub Pages disabled | Use Netlify for frontend hosting |
-| Backend deployment | Railway with env vars configured |
-| MongoDB unavailable | In-memory fallback works for demo |
+| Production email missing | Configure `RESEND_API_KEY` and `PASSWORD_RESET_FROM` in Vercel |
+| Vercel deployment | Keep root directory as repo root, framework Vite, output `dist` |
+| MongoDB unavailable | Check `/api/health` and Atlas network access |
 | PowerShell restriction | Use `npm.cmd` and `npx.cmd` |
-| Data persistence | Switch to MongoDB Atlas for production |
+| Data persistence | Use MongoDB Atlas for production |
 
 ## Monitoring
 - Check build output for errors before deployment

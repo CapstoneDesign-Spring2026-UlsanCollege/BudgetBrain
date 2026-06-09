@@ -12,8 +12,8 @@ Final polish, testing, and deployment preparation.
 - [x] DIY LED lighting effects (strips, neon, breathing glow, RGB borders)
 - [x] Sidebar LED strip and desk glow spill effects
 - [x] README documentation
-- [x] GitHub Pages setup
-- [x] Backend deployment preparation
+- [x] Vercel deployment setup
+- [x] Backend API deployment preparation
 
 ## Tasks
 | Task | Owner | Status |
@@ -26,7 +26,6 @@ Final polish, testing, and deployment preparation.
 | Deployment prep | Team | Done |
 
 ## Blockers
-- GitHub Pages may be disabled at organization level
-- Backend deployment pending Railway setup
+- Production email provider env vars still need to be configured
 ## Notes
 All features complete. Frontend builds with 0 errors. Ready for final deployment.

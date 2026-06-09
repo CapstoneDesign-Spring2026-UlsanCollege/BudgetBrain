@@ -11,9 +11,9 @@
 3. Should we add budget rollover to next month?
 
 ## Deployment Questions
-1. Which hosting for backend - Railway or Render?
-2. Can GitHub Pages be enabled for this organization?
-3. Should we use a custom domain?
+1. Should we use a custom domain?
+2. Should production email delivery be configured for password reset?
+3. Should Vercel analytics be enabled?
 
 ## UI/UX Questions
 1. Should we add onboarding tutorial for new users?
@@ -25,3 +25,4 @@
 - Q: Default currency? A: NPR (Nepalese Rupee)
 - Q: CSS framework? A: Vanilla CSS only
 - Q: State management? A: React Context + localStorage
+- Q: Production hosting? A: Vercel
