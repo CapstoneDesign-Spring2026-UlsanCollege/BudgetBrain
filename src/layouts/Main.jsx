@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import "../pages/Dashboard.css"; // Import the layout CSS globally
 
 // helper functions
-import { fetchData, refreshExchangeRate } from "../helpers";
+import { fetchData } from "../helpers";
 
 // loader
 export async function mainLoader() {
@@ -32,10 +32,6 @@ const Main = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   React.useEffect(() => {
-    refreshExchangeRate().catch((err) => {
-      console.warn('Could not refresh exchange rate:', err.userMessage || err.message);
-    });
-
     const handleCurrencyChange = () => setCurrencyVersion((value) => value + 1);
     window.addEventListener('budgetbrain-currency-change', handleCurrencyChange);
     return () => window.removeEventListener('budgetbrain-currency-change', handleCurrencyChange);

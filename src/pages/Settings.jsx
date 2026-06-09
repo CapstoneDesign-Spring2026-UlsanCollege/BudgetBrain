@@ -32,19 +32,6 @@ const Settings = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('budgetbrain-theme');
     if (savedTheme === 'light') setIsDarkTheme(false);
-
-    setIsRefreshingRate(true);
-    refreshExchangeRate(currency)
-      .then((payload) => {
-        setExchangeRate(payload.rate);
-        setExchangeUpdated(localStorage.getItem('budgetbrain-exchange-updated'));
-        setExchangeProvider(payload.provider);
-        setExchangeProviderUrl(payload.providerUrl || localStorage.getItem('budgetbrain-exchange-provider-url'));
-      })
-      .catch((err) => {
-        toast.error(err.userMessage || 'Could not refresh exchange rate');
-      })
-      .finally(() => setIsRefreshingRate(false));
   }, []);
 
   const handleThemeToggle = () => {

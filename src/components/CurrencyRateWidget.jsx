@@ -57,10 +57,10 @@ const CurrencyRateWidget = () => {
   return (
     <section className="currency-dashboard-bar" aria-label="Live currency exchange">
       <div className="currency-dashboard-copy">
-        <span className="currency-kicker">Live Currency Rate</span>
+        <span className="currency-kicker">Display Currency</span>
         <strong>1 {BASE_CURRENCY} = {rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} {currency}</strong>
         <small>
-          Updated {updatedLabel}
+          Change the selector to update all displayed amounts. Updated {updatedLabel}
           {provider && currency !== BASE_CURRENCY ? ` by ${provider}` : ''}
         </small>
       </div>
