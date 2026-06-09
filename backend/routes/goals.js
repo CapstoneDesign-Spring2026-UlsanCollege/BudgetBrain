@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Goal = require('../models/Goal');
 const {
+  ACCOUNTING_CURRENCY,
   cleanString,
   handleServerError,
   isValidObjectId,
@@ -35,6 +36,7 @@ router.post('/', auth, async (req, res) => {
     const goal = new Goal({
       name,
       targetAmount: parsedTarget.value,
+      currency: ACCOUNTING_CURRENCY,
       deadline: parsedDeadline.value,
       icon,
       user: req.user.id
@@ -102,6 +104,7 @@ router.put('/:id', auth, async (req, res) => {
       if (!icon) return sendError(res, 400, 'Goal icon is required.');
       goal.icon = icon;
     }
+    goal.currency = ACCOUNTING_CURRENCY;
 
     await goal.save();
     res.json(goal);

@@ -37,7 +37,7 @@ const CurrencyRateWidget = () => {
       setRate(payload.rate);
       setUpdatedAt(localStorage.getItem('budgetbrain-exchange-updated'));
       setProvider(payload.provider);
-      if (showToast) toast.success(`Dashboard currency set to ${payload.to}`);
+      if (showToast) toast.success(`Exchange rate target set to ${payload.to}`);
     } catch (err) {
       syncFromStorage();
       toast.error(err.userMessage || 'Could not refresh exchange rate');

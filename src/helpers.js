@@ -1,6 +1,7 @@
 import api from './api';
 
 export const BASE_CURRENCY = 'NPR';
+export const ACCOUNTING_CURRENCY = 'NPR';
 export const SUPPORTED_CURRENCIES = [
   ['NPR', 'Rs. NPR - Nepali Rupee'],
   ['USD', '$ USD - US Dollar'],
@@ -68,7 +69,7 @@ export const deleteItem = async ({ key, id }) => {
 export const createBudget = async ({ name, amount }) => {
   try {
     const color = await generateRandomColor();
-    const res = await api.post('/budgets', { name, amount: +amount, color });
+    const res = await api.post('/budgets', { name, amount: +amount, currency: ACCOUNTING_CURRENCY, color });
     return res.data;
   } catch (error) {
     console.error('Error creating budget:', error);
@@ -78,7 +79,13 @@ export const createBudget = async ({ name, amount }) => {
 
 export const createExpense = async ({ name, amount, budgetId, category }) => {
   try {
-    const res = await api.post('/expenses', { name, amount: +amount, budgetId, category });
+    const res = await api.post('/expenses', {
+      name,
+      amount: +amount,
+      currency: ACCOUNTING_CURRENCY,
+      budgetId,
+      category,
+    });
     return res.data;
   } catch (error) {
     console.error('Error creating expense:', error);
@@ -159,12 +166,10 @@ export const refreshExchangeRate = async (currency = getSelectedCurrency()) => {
 };
 
 export const formatCurrency = (amt) => {
-  const currency = getSelectedCurrency();
   const amount = Number.isFinite(Number(amt)) ? Number(amt) : 0;
-  const convertedAmount = amount * getExchangeRate();
-  return convertedAmount.toLocaleString(undefined, {
+  return amount.toLocaleString(undefined, {
     style: "currency",
-    currency,
+    currency: ACCOUNTING_CURRENCY,
   });
 };
 

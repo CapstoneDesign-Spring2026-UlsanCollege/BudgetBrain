@@ -5,7 +5,7 @@ import {
   PlusIcon, TrashIcon, BanknotesIcon,
 } from '@heroicons/react/24/solid';
 import api from '../api';
-import { formatCurrency } from '../helpers';
+import { ACCOUNTING_CURRENCY, formatCurrency } from '../helpers';
 
 const ICONS = ['\uD83C\uDFAF', '\uD83C\uDFE0', '\uD83D\uDE97', '\u2708\uFE0F', '\uD83C\uDF93', '\uD83D\uDCBB', '\u2764\uFE0F', '\uD83C\uDFAE', '\uD83D\uDCF1', '\uD83D\uDC8E', '\uD83C\uDFD6\uFE0F', '\uD83C\uDFB8'];
 
@@ -63,7 +63,11 @@ const Goals = () => {
     e.preventDefault();
     try {
       await api.post('/goals', {
-        name, targetAmount: +target, deadline: deadline || null, icon,
+        name,
+        targetAmount: +target,
+        currency: ACCOUNTING_CURRENCY,
+        deadline: deadline || null,
+        icon,
       });
       await refreshGoalsQuietly();
       setName('');

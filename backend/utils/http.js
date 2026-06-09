@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 const HSL_TOKEN_PATTERN = /^\d{1,3}\s+\d{1,3}%\s+\d{1,3}%$/;
+const ACCOUNTING_CURRENCY = 'NPR';
 
 function normalizeEmail(email) {
   return typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -61,6 +62,7 @@ function handleServerError(res, err, fallback = 'Server Error') {
 }
 
 module.exports = {
+  ACCOUNTING_CURRENCY,
   cleanString,
   handleServerError,
   isValidColor,

@@ -22,6 +22,12 @@ const ExpenseSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  currency: {
+    type: String,
+    default: 'NPR',
+    enum: ['NPR'],
+    immutable: true
+  },
   category: {
     type: String,
     default: 'other',

@@ -73,7 +73,7 @@ const Settings = () => {
       setExchangeUpdated(localStorage.getItem('budgetbrain-exchange-updated'));
       setExchangeProvider(payload.provider);
       setExchangeProviderUrl(payload.providerUrl || localStorage.getItem('budgetbrain-exchange-provider-url'));
-      toast.success(`Currency set to ${val} with live exchange rate`);
+      toast.success(`Exchange rate target set to ${val}`);
     } catch (err) {
       setCurrency(localStorage.getItem('budgetbrain-currency') || BASE_CURRENCY);
       toast.error(err.userMessage || 'Could not update exchange rate');
@@ -136,8 +136,8 @@ const Settings = () => {
         <h3><CurrencyDollarIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> Currency</h3>
         <div className="settings-row">
           <div className="settings-row-info">
-            <strong>Display Currency</strong>
-            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Currency used for all financial values</p>
+            <strong>Exchange Target</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>App amounts stay entered, displayed, and saved in NPR</p>
           </div>
           <select value={currency} onChange={handleCurrencyChange} className="settings-select" disabled={isRefreshingRate}>
             {SUPPORTED_CURRENCIES.map(([code, label]) => (

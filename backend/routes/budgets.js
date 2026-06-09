@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 const {
+  ACCOUNTING_CURRENCY,
   cleanString,
   handleServerError,
   isValidColor,
@@ -40,6 +41,7 @@ router.post('/', auth, async (req, res) => {
     const newBudget = new Budget({
       name,
       amount: parsedAmount.value,
+      currency: ACCOUNTING_CURRENCY,
       color,
       user: req.user.id
     });
@@ -81,6 +83,7 @@ router.put('/:id', auth, async (req, res) => {
       if (!isValidColor(color)) return sendError(res, 400, 'Budget color is invalid.');
       budget.color = color;
     }
+    budget.currency = ACCOUNTING_CURRENCY;
 
     await budget.save();
     res.json(budget);

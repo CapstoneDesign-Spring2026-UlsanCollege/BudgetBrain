@@ -17,6 +17,12 @@ const BudgetSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  currency: {
+    type: String,
+    default: 'NPR',
+    enum: ['NPR'],
+    immutable: true
+  },
   color: {
     type: String,
     required: true,

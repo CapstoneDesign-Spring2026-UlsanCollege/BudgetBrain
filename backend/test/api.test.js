@@ -100,18 +100,21 @@ test('creates, updates, and deletes a budget', { skip: !integrationEnabled && 'S
   const createRes = await request('/api/budgets', {
     method: 'POST',
     token,
-    body: { name: 'Food', amount: 500, color: '210 65% 50%' },
+    body: { name: 'Food', amount: 500, currency: 'USD', color: '210 65% 50%' },
   });
   assert.equal(createRes.status, 201);
   const budget = await json(createRes);
+  assert.equal(budget.currency, 'NPR');
 
   const updateRes = await request(`/api/budgets/${budget._id}`, {
     method: 'PUT',
     token,
-    body: { amount: 650 },
+    body: { amount: 650, currency: 'USD' },
   });
   assert.equal(updateRes.status, 200);
-  assert.equal((await json(updateRes)).amount, 650);
+  const updatedBudget = await json(updateRes);
+  assert.equal(updatedBudget.amount, 650);
+  assert.equal(updatedBudget.currency, 'NPR');
 
   const deleteRes = await request(`/api/budgets/${budget._id}`, { method: 'DELETE', token });
   assert.equal(deleteRes.status, 200);
@@ -138,9 +141,10 @@ test('validates expense budget ownership', { skip: !integrationEnabled && 'Set R
   const ownExpense = await request('/api/expenses', {
     method: 'POST',
     token: first.token,
-    body: { name: 'Flight', amount: 300, budgetId: budget._id, category: 'travel' },
+    body: { name: 'Flight', amount: 300, currency: 'USD', budgetId: budget._id, category: 'travel' },
   });
   assert.equal(ownExpense.status, 201);
+  assert.equal((await json(ownExpense)).currency, 'NPR');
 });
 
 test('creates, updates, and deletes a goal', { skip: !integrationEnabled && 'Set RUN_INTEGRATION_TESTS=1 to run MongoDB integration tests.' }, async () => {
@@ -149,10 +153,11 @@ test('creates, updates, and deletes a goal', { skip: !integrationEnabled && 'Set
   const createRes = await request('/api/goals', {
     method: 'POST',
     token,
-    body: { name: 'Emergency Fund', targetAmount: 2000 },
+    body: { name: 'Emergency Fund', targetAmount: 2000, currency: 'USD' },
   });
   assert.equal(createRes.status, 201);
   const goal = await json(createRes);
+  assert.equal(goal.currency, 'NPR');
 
   const updateRes = await request(`/api/goals/${goal._id}`, {
     method: 'PUT',
@@ -160,7 +165,9 @@ test('creates, updates, and deletes a goal', { skip: !integrationEnabled && 'Set
     body: { savedAmount: 250 },
   });
   assert.equal(updateRes.status, 200);
-  assert.equal((await json(updateRes)).savedAmount, 250);
+  const updatedGoal = await json(updateRes);
+  assert.equal(updatedGoal.savedAmount, 250);
+  assert.equal(updatedGoal.currency, 'NPR');
 
   const deleteRes = await request(`/api/goals/${goal._id}`, { method: 'DELETE', token });
   assert.equal(deleteRes.status, 200);

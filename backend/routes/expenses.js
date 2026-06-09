@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const {
+  ACCOUNTING_CURRENCY,
   cleanString,
   handleServerError,
   isValidObjectId,
@@ -43,6 +44,7 @@ router.post('/', auth, async (req, res) => {
     const newExpense = new Expense({
       name,
       amount: parsedAmount.value,
+      currency: ACCOUNTING_CURRENCY,
       category,
       budget: budgetId,
       user: req.user.id
@@ -83,6 +85,7 @@ router.put('/:id', auth, async (req, res) => {
     if (req.body.category !== undefined) {
       expense.category = cleanString(req.body.category) || 'other';
     }
+    expense.currency = ACCOUNTING_CURRENCY;
 
     await expense.save();
     res.json(expense);
