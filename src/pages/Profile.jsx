@@ -76,7 +76,7 @@ const Profile = () => {
     : 'Unknown';
 
   return (
-    <div className="grid-lg" style={{ width: '100%', maxWidth: '800px' }}>
+    <div className="profile-page grid-lg">
       <h1>Profile</h1>
 
       <div className="profile-card">

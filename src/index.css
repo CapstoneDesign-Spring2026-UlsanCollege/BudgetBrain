@@ -480,6 +480,57 @@ input:focus, select:focus {
     flex-direction: column;
   }
 
+  .profile-page {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .profile-card {
+    text-align: center;
+  }
+
+  .profile-avatar-wrapper {
+    align-self: center;
+  }
+
+  .profile-info {
+    min-width: 0;
+  }
+
+  .profile-info p,
+  .profile-info small {
+    overflow-wrap: anywhere;
+  }
+
+  .profile-name-display,
+  .profile-name-edit {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .profile-name-display h2 {
+    font-size: 1.35rem;
+  }
+
+  .profile-name-edit {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-name-input {
+    width: 100%;
+    text-align: center;
+    font-size: 1.25rem;
+  }
+
+  .profile-name-edit .btn-icon {
+    align-self: center;
+  }
+
+  .profile-section .btn {
+    width: 100%;
+  }
+
   .search-input-wrap,
   .sort-select,
   .filter-group,
@@ -645,6 +696,10 @@ input:focus, select:focus {
 }
 
 /* Profile Page */
+.profile-page {
+  width: min(100%, 800px);
+}
+
 .profile-card {
   display: flex;
   align-items: center;
@@ -668,6 +723,7 @@ input:focus, select:focus {
 
 .profile-info h2 {
   font-size: 1.5rem;
+  overflow-wrap: anywhere;
 }
 
 .profile-section {
@@ -684,6 +740,7 @@ input:focus, select:focus {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  line-height: 1.3;
 }
 
 /* Analytics Stats */
