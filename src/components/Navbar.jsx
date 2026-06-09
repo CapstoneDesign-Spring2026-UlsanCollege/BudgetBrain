@@ -165,6 +165,16 @@ export default function Navbar({ onToggleSidebar, userName, budgets = [], expens
     navigate("/login");
   };
 
+  const handleUserMenuClick = () => {
+    const isMobile = window.matchMedia?.("(max-width: 640px)").matches;
+    if (isMobile) {
+      setIsUserMenuOpen(false);
+      navigate("/profile");
+      return;
+    }
+    setIsUserMenuOpen((open) => !open);
+  };
+
   const notifications = buildNotifications({ budgets, expenses, goals: liveGoals });
   const notificationsEnabled = localStorage.getItem('budgetbrain-notifications') !== 'false';
 
@@ -269,8 +279,8 @@ export default function Navbar({ onToggleSidebar, userName, budgets = [], expens
         <div className="relative" ref={userMenuRef} style={{ position: 'relative' }}>
           <button 
             className="avatar-btn"
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            aria-label="User menu"
+            onClick={handleUserMenuClick}
+            aria-label="Open profile"
           >
             <div className="avatar avatar-sm">{avatar || initial}</div>
           </button>

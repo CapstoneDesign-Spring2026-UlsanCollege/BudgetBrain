@@ -1,4 +1,4 @@
-const CACHE_NAME = 'budgetbrain-shell-v1';
+const CACHE_NAME = 'budgetbrain-shell-v2';
 const APP_SHELL = ['/', '/manifest.webmanifest', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -39,14 +39,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => (
-      cached || fetch(request).then((response) => {
+    fetch(request)
+      .then((response) => {
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
       })
-    ))
+      .catch(() => caches.match(request))
   );
 });
