@@ -352,6 +352,20 @@ input:focus, select:focus {
   gap: 1rem;
 }
 
+.receipt-capture-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.receipt-file-input {
+  display: none;
+}
+
+.receipt-scan-btn {
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   .expense-inputab {
     grid-template-columns: 1fr;

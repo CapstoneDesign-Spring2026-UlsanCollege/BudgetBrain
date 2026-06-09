@@ -44,6 +44,7 @@ const Main = () => {
   return (
     <div className="dashboard-wrapper">
       <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} budgets={budgets} expenses={expenses} userName={userName} />
+      {isSidebarOpen && <button type="button" className="sidebar-backdrop" onClick={toggleSidebar} aria-label="Close sidebar" />}
       
       <main className="dashboard-main">
         <Navbar onToggleSidebar={toggleSidebar} userName={userName} budgets={budgets} expenses={expenses} goals={goals} />

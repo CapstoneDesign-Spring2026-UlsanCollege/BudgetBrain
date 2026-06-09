@@ -231,7 +231,7 @@ const Dashboard = () => {
             {/* Section 5: Detailed Budget Progress */}
             <section className="flow-section">
               <h3 className="section-title" style={{ marginTop: '1rem' }}>Detailed Budget Breakdown</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+              <div className="budget-breakdown-grid">
                 {budgets.map((budget) => (
                   <BudgetItem key={budget.id} budget={budget} expenses={expenses} />
                 ))}

@@ -124,6 +124,10 @@
   flex-direction: column;
 }
 
+.sidebar-backdrop {
+  display: none;
+}
+
 /* --- Top Navbar --- */
 .top-navbar {
   height: 80px;
@@ -371,6 +375,12 @@
   gap: 1.5rem;
 }
 
+.budget-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
@@ -422,9 +432,19 @@
 @media (max-width: 1024px) {
   .sidebar {
     transform: translateX(-100%);
+    max-width: min(86vw, 320px);
   }
   .sidebar.show {
     transform: translateX(0);
+  }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
   }
   .dashboard-main {
     margin-left: 0;
@@ -447,6 +467,126 @@
   }
   .currency-dashboard-select {
     min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-wrapper {
+    width: 100%;
+  }
+
+  .top-navbar {
+    height: 64px;
+    padding: 0 1rem;
+  }
+
+  .nav-icons {
+    gap: 0.75rem;
+  }
+
+  .dropdown-menu {
+    right: -0.25rem;
+    max-width: calc(100vw - 1rem);
+  }
+
+  .welcome-banner {
+    padding: 1.5rem 1rem;
+  }
+
+  .welcome-banner h1 {
+    font-size: 2rem;
+  }
+
+  .welcome-banner p {
+    font-size: 1rem;
+  }
+
+  .dashboard-top-tools,
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .dashboard-content {
+    gap: 1.5rem;
+  }
+
+  .summary-cards,
+  .budget-breakdown-grid,
+  .goals-grid,
+  .analytics-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-card,
+  .budget,
+  .goal-card,
+  .profile-card,
+  .profile-section,
+  .chart-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .glass-card h2 {
+    font-size: 1.55rem;
+    overflow-wrap: anywhere;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-wrapper {
+    padding: 0;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .currency-dashboard-controls,
+  .receipt-capture-row,
+  .expenses-actions,
+  .search-summary,
+  .goal-add-savings {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .currency-dashboard-controls > *,
+  .receipt-capture-row > *,
+  .expenses-actions > *,
+  .goal-add-savings > * {
+    width: 100%;
+  }
+
+  .table {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table table {
+    min-width: 680px;
+  }
+
+  .sidebar {
+    padding: 1.25rem 1rem;
+  }
+
+  .sidebar-brand {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .sidebar a {
+    padding: 0.85rem 1rem;
+  }
+
+  .sidebar-progress-section {
+    padding-top: 1rem;
   }
 }
 
