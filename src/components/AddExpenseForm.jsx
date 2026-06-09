@@ -17,6 +17,27 @@ export const EXPENSE_CATEGORIES = [
   ['other', ['📦', 'Other']],
 ];
 
+export const getExpenseCategoryMeta = (category) => {
+  const value = typeof category === "string" && category.trim() ? category.trim() : "other";
+  const categoryData = EXPENSE_CATEGORIES.find(([key]) => key === value);
+
+  if (categoryData) {
+    return {
+      icon: categoryData[1][0],
+      label: categoryData[1][1],
+      value,
+    };
+  }
+
+  return {
+    icon: "📦",
+    label: value
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase()),
+    value,
+  };
+};
+
 const TESSERACT_CDN = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
 
 const loadTesseract = () => new Promise((resolve, reject) => {
@@ -150,9 +171,7 @@ const AddExpenseForm = ({ budgets }) => {
         budgetRef.current.value = budgets[0].id || budgets[0]._id;
       }
 
-      setScanStatus("Saving expense...");
-      toast.success(`Receipt read: Rs. ${Math.round(parsed.amount).toLocaleString()}`);
-      formRef.current?.requestSubmit();
+      toast.success(`Receipt read: Rs. ${Math.round(parsed.amount).toLocaleString()}. Review and tap Add Expense.`);
     } catch (err) {
       console.error("Receipt scan failed:", err);
       toast.error("Could not read the receipt. Try a clearer photo.");
@@ -201,13 +220,24 @@ const AddExpenseForm = ({ budgets }) => {
             </div>
             <div className="grid-xs">
               <label htmlFor="newExpenseCategory">Type</label>
-              <select name="category" id="newExpenseCategory" required defaultValue="other" ref={categoryRef}>
+              <input
+                type="text"
+                name="category"
+                id="newExpenseCategory"
+                list="expenseCategoryOptions"
+                placeholder="e.g., food or college fees"
+                defaultValue="other"
+                ref={categoryRef}
+                maxLength={40}
+                required
+              />
+              <datalist id="expenseCategoryOptions">
                 {EXPENSE_CATEGORIES.map(([key, [icon, label]]) => (
                   <option key={key} value={key}>
                     {icon} {label}
                   </option>
                 ))}
-              </select>
+              </datalist>
             </div>
             <div className="grid-xs" hidden={budgets.length === 1}>
               <label htmlFor="newExpenseBudget">Budget</label>

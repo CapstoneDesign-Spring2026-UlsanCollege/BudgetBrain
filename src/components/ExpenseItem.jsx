@@ -8,7 +8,7 @@ import {
   updateExpense,
   getAllMatchingItems,
 } from "../helpers";
-import { EXPENSE_CATEGORIES } from "./AddExpenseForm";
+import { getExpenseCategoryMeta } from "./AddExpenseForm";
 
 const ExpenseItem = ({ expense, showBudget }) => {
   const fetcher = useFetcher();
@@ -37,9 +37,7 @@ const ExpenseItem = ({ expense, showBudget }) => {
     }
   };
 
-  const categoryData = EXPENSE_CATEGORIES.find(c => c[0] === (expense.category || 'other'));
-  const catIcon = categoryData ? categoryData[1][0] : '📦';
-  const catLabel = categoryData ? categoryData[1][1] : 'Other';
+  const { icon: catIcon, label: catLabel } = getExpenseCategoryMeta(expense.category);
 
   return (
     <>

@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, XMarkIcon, CalendarDaysIcon } from "@heroicons/react/24/solid";
 import Table from "../components/Table";
 import { deleteItem, formatCurrency } from "../helpers";
-import { EXPENSE_CATEGORIES } from "../components/AddExpenseForm";
+import { EXPENSE_CATEGORIES, getExpenseCategoryMeta } from "../components/AddExpenseForm";
 
 export async function expensesAction({ request }) {
   const data = await request.formData();
@@ -18,8 +18,6 @@ export async function expensesAction({ request }) {
     }
   }
 }
-
-const categoryMap = Object.fromEntries(EXPENSE_CATEGORIES);
 
 const escapeCSV = (value) => {
   const text = String(value ?? '');
@@ -114,7 +112,7 @@ const ExpensesPage = () => {
     const rows = filtered.map(e => [
       e.name,
       e.amount,
-      categoryMap[e.category]?.[1] || 'Other',
+      getExpenseCategoryMeta(e.category).label,
       new Date(e.createdAt).toLocaleDateString()
     ]);
     const csv = [headers, ...rows].map(r => r.map(escapeCSV).join(',')).join('\n');
@@ -135,7 +133,7 @@ const ExpensesPage = () => {
       return;
     }
     const rows = filtered.map((e, i) =>
-      `<tr><td>${i + 1}</td><td>${escapeHTML(e.name)}</td><td>${escapeHTML(categoryMap[e.category]?.[1] || 'Other')}</td><td>${escapeHTML(formatCurrency(e.amount))}</td><td>${escapeHTML(new Date(e.createdAt).toLocaleDateString())}</td></tr>`
+      `<tr><td>${i + 1}</td><td>${escapeHTML(e.name)}</td><td>${escapeHTML(getExpenseCategoryMeta(e.category).label)}</td><td>${escapeHTML(formatCurrency(e.amount))}</td><td>${escapeHTML(new Date(e.createdAt).toLocaleDateString())}</td></tr>`
     ).join('');
     const html = `
       <html><head><title>BudgetBrain Expenses</title>
