@@ -366,9 +366,112 @@ input:focus, select:focus {
   width: 100%;
 }
 
+.receipt-review-panel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+}
+
+.receipt-review-header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.receipt-review-header small {
+  color: hsl(var(--muted));
+}
+
+.receipt-items-list {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.receipt-item-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(96px, 0.35fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.receipt-item-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: hsl(var(--accent));
+}
+
+.receipt-camera-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.receipt-camera-sheet {
+  width: min(720px, 100%);
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: hsl(var(--bkg-card));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-premium);
+}
+
+.receipt-camera-header,
+.receipt-camera-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.receipt-camera-preview {
+  width: 100%;
+  max-height: min(68vh, 520px);
+  object-fit: contain;
+  background: #000;
+  border-radius: 10px;
+}
+
+.receipt-camera-error {
+  padding: 1rem;
+  color: hsl(var(--danger));
+  border: 1px solid hsl(var(--danger) / 0.35);
+  border-radius: 10px;
+  background: hsl(var(--danger) / 0.08);
+}
+
 @media (max-width: 600px) {
   .expense-inputab {
     grid-template-columns: 1fr;
+  }
+
+  .receipt-item-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .receipt-item-row input[type="number"] {
+    grid-column: 2;
+  }
+
+  .receipt-camera-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .receipt-camera-actions .btn {
+    width: 100%;
   }
 }
 
