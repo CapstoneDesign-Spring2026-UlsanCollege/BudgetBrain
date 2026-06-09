@@ -166,10 +166,13 @@ export const refreshExchangeRate = async (currency = getSelectedCurrency()) => {
 };
 
 export const formatCurrency = (amt) => {
+  const currency = getSelectedCurrency();
   const amount = Number.isFinite(Number(amt)) ? Number(amt) : 0;
-  return amount.toLocaleString(undefined, {
+  const convertedAmount = amount * getExchangeRate();
+
+  return convertedAmount.toLocaleString(undefined, {
     style: "currency",
-    currency: ACCOUNTING_CURRENCY,
+    currency,
   });
 };
 
