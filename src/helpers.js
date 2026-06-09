@@ -165,6 +165,26 @@ export const refreshExchangeRate = async (currency = getSelectedCurrency()) => {
   return payload;
 };
 
+export const fetchLiveExchangeRate = async (currency = getSelectedCurrency()) => {
+  const targetCurrency = currency || BASE_CURRENCY;
+
+  if (targetCurrency === BASE_CURRENCY) {
+    return {
+      from: BASE_CURRENCY,
+      to: BASE_CURRENCY,
+      rate: 1,
+      cached: true,
+      provider: 'Local identity conversion',
+      fetchedAt: Date.now(),
+    };
+  }
+
+  const res = await api.get('/exchange/rate', {
+    params: { from: BASE_CURRENCY, to: targetCurrency },
+  });
+  return res.data;
+};
+
 export const formatCurrency = (amt) => {
   const currency = getSelectedCurrency();
   const amount = Number.isFinite(Number(amt)) ? Number(amt) : 0;
