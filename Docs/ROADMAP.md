@@ -1,41 +1,48 @@
 # BudgetBrain Roadmap
 
-## Completed
+## Completed (Capstone MVP — All Features Working)
 
-- User authentication (register/login)
-- Budget management (CRUD)
-- Expense tracking (CRUD)
-- Savings goals
-- Analytics dashboard with charts
-- Dark/light theme
-- Profile with avatar
-- Deployment on Vercel
-- Responsive design
-- Premium visual effects
+- User authentication (register/login) with JWT
+- Password reset flow via email codes (Resend API)
+- Budget management (CRUD) with color categories
+- Expense tracking (CRUD) linked to budgets
+- Savings goals with progress tracking
+- Analytics dashboard with Recharts (pie + bar charts)
+- Dark/light theme toggle with persistence
+- Profile with emoji avatar selection
+- Currency conversion widget (live exchange rates)
+- Receipt scanning with PaddleOCR service + Tesseract browser fallback
+- Deployment on Vercel (frontend + serverless API)
+- Responsive design (mobile, tablet, desktop)
+- Premium visual effects (glass morphism, 3D effects)
+- Full documentation set through Week 15
 
-## Planned
+## Post-Capstone Future Enhancements
 
-### Short Term
-- Password reset flow
+### Short Term (Next Steps)
+- Recurring transactions (monthly bills, subscriptions)
+- CSV/PDF export of budget and expense data
+- Multi-currency support per user account
+- Onboarding tutorial for new users
 - Email notifications for budget limits
-- Better error handling and error pages
-- Input validation improvements
 
 ### Medium Term
-- Recurring transactions (monthly bills)
-- CSV/PDF export of data
-- Multiple currency support per user
-- Onboarding tutorial for new users
+- Bank/card transaction integration via Plaid or similar API
+- AI-powered spending insights and categorization
+- Monthly financial report generation
+- Push notifications for bill reminders
+- Goal deadline reminders
 
 ### Long Term
 - Mobile app (React Native)
-- Bank account integration
 - Budget sharing with family/roommates
-- AI-powered spending insights
-- Receipt scanning
+- Multi-user budget collaboration
+- PWA support for offline access
+- Multi-factor authentication
+- Dark theme customization options
 
 ## Ideas Under Discussion
-- Goal deadline reminders
 - Budget rollover to next month
-- Multi-user budget collaboration
-- Dark theme customization
+- Receipt image storage and history
+- Spending limits and alerts per category
+- Data export automation (scheduled PDF reports)
