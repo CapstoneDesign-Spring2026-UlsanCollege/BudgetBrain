@@ -2,7 +2,7 @@
 
 ## C4-Lite Architecture Overview
 
-BudgetBrain follows a three-tier client-server architecture with a React frontend, Express.js backend, and MongoDB database.
+BudgetBrain follows a three-tier client-server architecture with a React frontend, Express.js backend, and MongoDB database, deployed via Vercel.
 
 ```
                         ┌─────────────────────────────┐
@@ -26,6 +26,10 @@ BudgetBrain follows a three-tier client-server architecture with a React fronten
                         │  │ Profile │ │ Settings │   │
                         │  │ Page    │ │ Page     │   │
                         │  └─────────┘ └──────────┘   │
+                        │  ┌─────────┐                │
+                        │  │ Receipt │                │
+                        │  │ Scanner │                │
+                        │  └─────────┘                │
                         │                               │
                         │   Axios HTTP Client           │
                         │   JWT in localStorage          │
@@ -47,6 +51,10 @@ BudgetBrain follows a three-tier client-server architecture with a React fronten
                         │  │ Goal     │ │ Exchange  │ │
                         │  │ Routes   │ │ Routes    │ │
                         │  └──────────┘ └───────────┘ │
+                        │  ┌──────────────────────┐   │
+                        │  │ Password Reset Flow  │   │
+                        │  │ (Resend API)         │   │
+                        │  └──────────────────────┘   │
                         │                               │
                         │   Rate Limiting               │
                         │   Security Headers            │
@@ -67,6 +75,18 @@ BudgetBrain follows a three-tier client-server architecture with a React fronten
                         │                               │
                         │   In-Memory Fallback           │
                         │   (when DB unavailable)        │
+                        └─────────────────────────────┘
+                                      │
+                        ┌─────────────┴───────────────┐
+                        │     External Services        │
+                        │                               │
+                        │  ┌──────────┐ ┌───────────┐ │
+                        │  │ Resend   │ │ Open ER   │ │
+                        │  │ (Email)  │ │ (Currency)│ │
+                        │  ├──────────┤ ├───────────┤ │
+                        │  │PaddleOCR │ │Tesseract  │ │
+                        │  │ Service  │ │ Browser   │ │
+                        │  └──────────┘ └───────────┘ │
                         └─────────────────────────────┘
 ```
 
@@ -90,6 +110,13 @@ MongoDB serves as the primary data store, accessed through the Mongoose ODM. The
 
 **Key technologies:** MongoDB, Mongoose ODM, MongoDB Atlas (cloud)
 
+### 4. External Services
+
+- **Resend API:** Email delivery for password reset codes and welcome emails
+- **Open ER API:** Live currency exchange rates
+- **PaddleOCR Service:** Optional OCR endpoint for receipt scanning
+- **Tesseract.js:** Browser-based OCR fallback when the PaddleOCR service is unavailable
+
 ## How Frontend Connects to Backend
 
 1. The frontend makes API calls using an Axios instance configured in `src/api.js`
@@ -105,12 +132,34 @@ MongoDB serves as the primary data store, accessed through the Mongoose ODM. The
 3. API routes that require the database return a 503 error if the database is not connected
 4. The server implements connection pooling and periodic health checks via ping commands
 
-## Planned Smart Finance / Analytics System
+## Authentication Flow
 
-Future architecture plans include:
+1. User registers or logs in → server returns JWT token
+2. Frontend stores token in localStorage
+3. All subsequent API requests include `Authorization: Bearer <token>`
+4. Backend middleware verifies token on protected routes
+5. Tokens expire after 7 days, requiring re-login
 
-- **AI Insights Module:** Analysis of spending patterns using machine learning
-- **Notification Service:** Email and in-app alerts for budget limits and bill reminders
-- **Data Export Pipeline:** PDF and CSV report generation
-- **Mobile App:** React Native wrapper for native mobile experience
-- **Third-party Integration:** Bank API connectors for automatic transaction import
+## Password Reset Flow
+
+1. User requests reset → server generates a 6-digit code (SHA-256 hashed)
+2. Code is sent via Resend API to user's email
+3. Code expires after 10 minutes (5 attempt limit)
+4. User submits code + new password → server verifies hash and updates password
+
+## Deployment Architecture
+
+```
+Vercel CDN
+    ├── / (static files from dist/)
+    │   ├── index.html (SPA entry)
+    │   ├── assets/*.js (React bundles)
+    │   └── assets/*.css (styles)
+    │
+    └── /api/* (serverless function)
+        └── api/index.js (Express app)
+```
+
+## Future Architecture
+
+See [FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md) for planned architecture changes including AI insights module, notification service, and mobile app.
