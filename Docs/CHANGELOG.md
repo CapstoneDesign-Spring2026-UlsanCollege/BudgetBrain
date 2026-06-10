@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.0 (June 2026)
+
+- Documentation audit completed
+- Weekly reports expanded through Week 15
+- Sprint packets backfilled for Weeks 7-15
+- Final portfolio deliverables added (report, demo script, presentation, poster)
+- Release notes, handoff guide, maintenance plan, and known limitations documented
+- System architecture, API reference, database design, deployment, security, and performance docs polished
+- Root README updated with links to all final deliverables
+
 ## v1.0.0 (May 2026)
 
 - Vercel deployment working
