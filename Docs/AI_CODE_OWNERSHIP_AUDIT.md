@@ -19,6 +19,8 @@
 | Database Connection | ✅ MongoDB (Atlas) |
 | Authentication | ✅ JWT-based |
 | Deployment | ✅ Vercel (live) |
+| Password Reset | ✅ Via Resend email API |
+| Receipt OCR | ✅ PaddleOCR service + Tesseract fallback |
 
 ## Current MVP Features
 
@@ -33,6 +35,7 @@
 - Avatar selection
 - Password reset via email
 - Currency conversion widget
+- Receipt scanning with OCR
 - Responsive design
 - Premium UI (glass morphism, 3D effects)
 
@@ -52,19 +55,8 @@
 | Theme Toggle | ✅ |
 | Currency Preferences | ✅ |
 | Currency Exchange Rates | ✅ |
+| Receipt OCR Scanning | ✅ (service + fallback) |
 | Mobile Responsive | ✅ |
-
-## What Is Planned
-
-- Bank/card transaction integration
-- Receipt scanning with OCR
-- AI-powered spending insights
-- Monthly financial reports
-- Email/push notifications
-- Data export (PDF/CSV)
-- Multi-language support
-- Multi-factor authentication
-- PWA support
 
 ## AI-Assisted Code Usage
 
@@ -76,39 +68,47 @@ This project incorporates AI-assisted development tools for code generation and 
 - Budget and expense forms
 - Savings goal tracking UI
 - Settings page with theme/currency options
+- Receipt scanning UI
 
 **Backend Routes:**
 - Auth route structure and JWT implementation
 - CRUD patterns for budgets, expenses, and goals
 - Error handling middleware
 - Password reset flow
+- OCR integration
 
 **Documentation:**
-- Weekly progress reports
+- Weekly progress reports (Weeks 1-15)
 - API documentation
 - System architecture diagrams
 - Testing plans
 - Deployment guides
+- Final portfolio documentation
+- Sprint packets
 
 ## AI-Assisted Documentation Usage
 
-The documentation files in the `docs/` and `Docs/` directories were created with assistance from AI tools. All technical content has been verified against the actual project codebase.
+The documentation files in the `Docs/` directory were created with assistance from AI tools. All technical content has been verified against the actual project codebase.
 
-**Documentation created with AI assistance:**
-- `docs/PROJECT_OVERVIEW.md` — Project scope and feature documentation
-- `docs/SYSTEM_ARCHITECTURE.md` — Architecture diagrams and descriptions
-- `docs/FRONTEND_DOCUMENTATION.md` — Frontend page and component documentation
-- `docs/BACKEND_DOCUMENTATION.md` — Backend API and middleware documentation
-- `docs/DATABASE_DESIGN.md` — Schema and relationship documentation
-- `docs/USER_FLOW.md` — User journey documentation
-- `docs/API_REFERENCE.md` — API endpoint documentation
-- `docs/TESTING_PLAN.md` — Testing procedures and checklists
-- `docs/DEPLOYMENT_GUIDE.md` — Setup and deployment instructions
-- `docs/FUTURE_ENHANCEMENTS.md` — Planned features documentation
-- `docs/weeks/WEEK_01.md` through `docs/weeks/WEEK_12.md` — Weekly progress reports
-- `PROJECT/WEEK_12/README.md` — Final project summary
+**Documentation created with AI assistance (Weeks 1-12):**
+- `Docs/PROJECT_OVERVIEW.md`, `Docs/SYSTEM_ARCHITECTURE.md`, `Docs/FRONTEND_DOCUMENTATION.md`, `Docs/BACKEND_DOCUMENTATION.md`, `Docs/DATABASE_DESIGN.md`, `Docs/USER_FLOW.md`, `Docs/API_REFERENCE.md`, `Docs/TESTING_PLAN.md`, `Docs/DEPLOYMENT_GUIDE.md`, `Docs/FUTURE_ENHANCEMENTS.md`, `Docs/weeks/WEEK_01.md` through `WEEK_12.md`, `PROJECT/WEEK_12/README.md`
 
-## Human Review Responsibility
+**Documentation created with AI assistance (Weeks 13-15):**
+- `Docs/weeks/WEEK_13.md` through `WEEK_15.md`
+- `Docs/sprint-packets/week7.md` through `week15.md`
+- `Docs/DOCUMENTATION_AUDIT.md`
+- `Docs/DOCS_COMPLETION_CHECKLIST.md`
+- `Docs/RELEASE_NOTES_V1.md`
+- `Docs/HANDOFF_GUIDE.md`
+- `Docs/MAINTENANCE_PLAN.md`
+- `Docs/KNOWN_LIMITATIONS.md`
+- `Final Portfolio Information/FINAL_REPORT.md`
+- `Final Portfolio Information/FINAL_DEMO_SCRIPT.md`
+- `Final Portfolio Information/PRESENTATION_OUTLINE.md`
+- `Final Portfolio Information/POSTER_CONTENT.md`
+- `PROJECT/WEEK_15/README.md`
+
+## Verification Responsibility
 
 All AI-generated code and documentation has been reviewed by the project team to ensure correctness, security, and alignment with project requirements. The team members take full ownership of the final codebase and documentation.
 
@@ -119,6 +119,10 @@ All AI-generated code and documentation has been reviewed by the project team to
 | Sunil Tamang | Documentation & Deployment Lead |
 | Angnima Sherpa | UI/UX Designer |
 
+## Final Human Ownership Statement
+
+The BudgetBrain project is the work of the team listed above. AI-assisted development tools were used as productivity aids for code generation, debugging, and documentation drafting. All AI-generated outputs were reviewed, tested, and validated by human team members before inclusion. The team members take full responsibility for and ownership of all code, documentation, and project artifacts.
+
 ## Documentation Ownership
 
 | Owner | Scope |
@@ -127,4 +131,4 @@ All AI-generated code and documentation has been reviewed by the project team to
 
 ## Audit Date
 
-Last audit: May 27, 2026
+Last audit: June 10, 2026
