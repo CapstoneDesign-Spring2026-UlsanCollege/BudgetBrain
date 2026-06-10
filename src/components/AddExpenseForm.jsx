@@ -184,11 +184,15 @@ const AddExpenseForm = ({ budgets }) => {
       [/shop|mall|clothes|fashion|shopping/, "shopping"],
     ].find(([pattern]) => pattern.test(lowerText))?.[1] || "other";
 
+    const fallbackItem = amount
+      ? [{ name: merchant || "Receipt expense", amount: Math.round(amount) }]
+      : [];
+
     return {
       amount,
       name: merchant || "Receipt expense",
       category,
-      items: itemLines,
+      items: itemLines.length ? itemLines : fallbackItem,
     };
   };
 
@@ -206,7 +210,10 @@ const AddExpenseForm = ({ budgets }) => {
     if (budgetRef.current && !budgetRef.current.value) {
       budgetRef.current.value = budgets[0].id || budgets[0]._id;
     }
-    setReceiptItems(parsed.items || []);
+    setReceiptItems(parsed.items?.length
+      ? parsed.items
+      : [{ name: parsed.name || "Receipt expense", amount: Math.round(parsed.amount) }]
+    );
   };
 
   const scanReceiptImage = async (imageSource) => {
@@ -235,11 +242,7 @@ const AddExpenseForm = ({ budgets }) => {
       }
 
       applyParsedReceipt(parsed);
-      toast.success(
-        parsed.items?.length
-          ? `Receipt read. Found ${parsed.items.length} possible line item${parsed.items.length === 1 ? "" : "s"}.`
-          : `Receipt read: Rs. ${Math.round(parsed.amount).toLocaleString()}. Review and tap Add Expense.`
-      );
+      toast.success(`Receipt read. Found ${parsed.items.length} transaction${parsed.items.length === 1 ? "" : "s"} to review.`);
     } catch (err) {
       console.error("Receipt scan failed:", err);
       toast.error("Could not read the receipt. Try a clearer photo.");
