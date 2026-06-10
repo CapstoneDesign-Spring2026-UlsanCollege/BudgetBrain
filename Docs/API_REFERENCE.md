@@ -544,6 +544,28 @@ Get exchange rates for a base currency.
 }
 ```
 
+## OCR Endpoint (External Service)
+
+### POST /api/ocr/scan (if PaddleOCR service configured)
+
+Scan a receipt image and extract text.
+
+**Request:** Form-data with image file
+
+**Response:**
+```json
+{
+  "text": "Store Name\nDate: 2026-01-15\nItem 1......$10.00\nItem 2......$5.00\nTotal......$15.00",
+  "fullText": "..."
+}
+```
+
+**Auth:** Yes
+
+**Note:** This endpoint requires a configured PaddleOCR service. Falls back to browser-based Tesseract.js if unavailable.
+
+---
+
 ## HTTP Status Code Summary
 
 | Code | Meaning |
