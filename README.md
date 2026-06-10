@@ -10,6 +10,7 @@ BudgetBrain is a full-stack budget planning web app built with React and Express
 - Add, edit, and delete expenses within budgets
 - Set savings goals and track progress
 - View spending analytics with charts
+- Scan receipts with PaddleOCR service support and browser OCR fallback
 - Dark and light theme toggle
 - Profile with avatar selection
 - Responsive design for mobile and desktop
@@ -24,6 +25,7 @@ BudgetBrain is a full-stack budget planning web app built with React and Express
 | Database | MongoDB (Atlas + in-memory fallback) |
 | Auth | JWT (JSON Web Tokens) |
 | Charts | Recharts |
+| OCR | Optional PaddleOCR service, browser Tesseract fallback |
 | Styling | Vanilla CSS with CSS variables |
 | Deployment | Vercel |
 
@@ -61,6 +63,10 @@ https://budgetbrain.vercel.app/
    # Required in production for welcome emails and forgot-password reset codes.
    RESEND_API_KEY=your_resend_api_key
    PASSWORD_RESET_FROM=BudgetBrain <verified-sender@yourdomain.com>
+   # Optional: PaddleOCR-compatible service endpoint for receipt scanning.
+   # The app POSTs { image, imageBase64 } and accepts text/fullText/ocrText-style responses.
+   PADDLEOCR_API_URL=https://your-paddleocr-service.example.com/ocr
+   PADDLEOCR_API_KEY=optional_bearer_token
    ```
 
 ## Usage
@@ -82,6 +88,7 @@ https://budgetbrain.vercel.app/
 
 Deployed on Vercel. Required env vars: `MONGO_URI`, `JWT_SECRET`.
 Optional env var: `EXCHANGE_RATE_API_URL` for overriding the live currency provider.
+Optional receipt OCR env vars: `PADDLEOCR_API_URL`, `PADDLEOCR_API_KEY`.
 Email delivery env vars: `RESEND_API_KEY` and `PASSWORD_RESET_FROM` are required for production welcome emails and forgot-password reset codes.
 
 Build: `npm run build`  

@@ -12,6 +12,7 @@ const budgetRoutes = require('./routes/budgets');
 const expenseRoutes = require('./routes/expenses');
 const goalRoutes = require('./routes/goals');
 const exchangeRoutes = require('./routes/exchange');
+const ocrRoutes = require('./routes/ocr');
 
 const app = express();
 let connectionPromise = null;
@@ -56,6 +57,7 @@ app.use(cors({
     return callback(new Error('Origin is not allowed by CORS'));
   },
 }));
+app.use('/api/ocr', express.json({ limit: '6mb' }), ocrRoutes);
 app.use(express.json({ limit: '100kb' }));
 
 const authLimiter = createRateLimiter({

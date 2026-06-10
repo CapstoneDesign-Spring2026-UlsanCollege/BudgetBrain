@@ -7,7 +7,9 @@ module.exports = async function handler(req, res) {
 
   try {
     validateConfig();
-    const publicWithoutDatabase = req.url.startsWith('/api/health') || req.url.startsWith('/api/exchange');
+    const publicWithoutDatabase = req.url.startsWith('/api/health')
+      || req.url.startsWith('/api/exchange')
+      || req.url.startsWith('/api/ocr');
     if (!publicWithoutDatabase) {
       await connectDB();
     }

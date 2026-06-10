@@ -3,6 +3,7 @@ import { useFetcher, useRevalidator } from "react-router-dom";
 import { toast } from "react-toastify";
 import { CameraIcon, PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { createExpense } from "../helpers";
+import api from "../api";
 
 export const EXPENSE_CATEGORIES = [
   ['food', ['🍔', 'Food & Dining']],
@@ -61,6 +62,24 @@ const loadTesseract = () => new Promise((resolve, reject) => {
   script.onerror = reject;
   document.head.appendChild(script);
 });
+
+const imageSourceToDataUrl = (imageSource) => new Promise((resolve, reject) => {
+  if (typeof imageSource === "string" && imageSource.startsWith("data:image/")) {
+    resolve(imageSource);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(imageSource);
+});
+
+const readWithPaddleOcr = async (imageSource) => {
+  const image = await imageSourceToDataUrl(imageSource);
+  const res = await api.post("/ocr/receipt", { image });
+  return res.data?.text || "";
+};
 
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
@@ -242,26 +261,37 @@ const AddExpenseForm = ({ budgets }) => {
     }
 
     setIsScanningReceipt(true);
-    setScanStatus("Reading receipt...");
+    setScanStatus("Reading receipt with PaddleOCR...");
 
     try {
-      const Tesseract = await loadTesseract();
-      const { data } = await Tesseract.recognize(imageSource, "eng", {
-        logger: (message) => {
-          if (message.status === "recognizing text") {
-            setScanStatus(`Reading receipt ${Math.round((message.progress || 0) * 100)}%`);
-          }
-        },
-      });
+      let ocrText = "";
+      let provider = "PaddleOCR";
 
-      const parsed = parseReceiptText(data.text || "");
+      try {
+        ocrText = await readWithPaddleOcr(imageSource);
+      } catch (paddleErr) {
+        console.warn("PaddleOCR unavailable, using browser OCR:", paddleErr.userMessage || paddleErr.message);
+        provider = "browser OCR";
+        setScanStatus("Reading receipt with browser OCR...");
+        const Tesseract = await loadTesseract();
+        const { data } = await Tesseract.recognize(imageSource, "eng", {
+          logger: (message) => {
+            if (message.status === "recognizing text") {
+              setScanStatus(`Reading receipt ${Math.round((message.progress || 0) * 100)}%`);
+            }
+          },
+        });
+        ocrText = data.text || "";
+      }
+
+      const parsed = parseReceiptText(ocrText);
       if (!parsed.amount) {
         toast.error("I could not find a total amount on that receipt.");
         return;
       }
 
       applyParsedReceipt(parsed);
-      toast.success(`Receipt read. Found ${parsed.items.length} transaction${parsed.items.length === 1 ? "" : "s"} to review.`);
+      toast.success(`${provider} read the receipt. Found ${parsed.items.length} transaction${parsed.items.length === 1 ? "" : "s"} to review.`);
     } catch (err) {
       console.error("Receipt scan failed:", err);
       toast.error("Could not read the receipt. Try a clearer photo.");
