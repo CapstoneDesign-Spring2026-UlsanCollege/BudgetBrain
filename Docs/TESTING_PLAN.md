@@ -187,3 +187,77 @@ This document outlines the manual testing plan for the BudgetBrain application. 
 | API returns correct responses | ✅ |
 | Error states handled gracefully | ✅ |
 | Loading states shown during API calls | ✅ |
+
+## Week 13 Regression Testing Checklist
+
+### Authentication
+| Test Case | Status |
+|-----------|--------|
+| Register with valid data | ✅ |
+| Register with duplicate email | ✅ |
+| Login with valid credentials | ✅ |
+| Login with invalid credentials | ✅ |
+| Password reset request email flow | ✅ |
+| Password reset with valid code | ✅ |
+| Password reset with expired code | ✅ |
+| JWT token expiry forces re-login | ✅ |
+
+### Budgets
+| Test Case | Status |
+|-----------|--------|
+| Create budget with valid data | ✅ |
+| Create budget with missing fields | ✅ |
+| Edit budget name and amount | ✅ |
+| Delete budget (cascades expenses) | ✅ |
+| Budget progress reflects expenses | ✅ |
+
+### Expenses
+| Test Case | Status |
+|-----------|--------|
+| Add expense to budget | ✅ |
+| Edit expense details | ✅ |
+| Delete expense | ✅ |
+| View all expenses sorted by date | ✅ |
+
+### Savings Goals
+| Test Case | Status |
+|-----------|--------|
+| Create goal with valid data | ✅ |
+| Add savings to goal (progress update) | ✅ |
+| Edit goal target and deadline | ✅ |
+| Delete goal | ✅ |
+
+### Dashboard / Charts
+| Test Case | Status |
+|-----------|--------|
+| Summary cards show correct totals | ✅ |
+| Pie chart renders with expense data | ✅ |
+| Bar chart shows monthly trends | ✅ |
+| Recent transactions list is accurate | ✅ |
+
+### Receipt Scanning
+| Test Case | Status |
+|-----------|--------|
+| PaddleOCR service returns text | ✅ |
+| Browser Tesseract fallback works | ✅ |
+
+### Responsive Layout
+| Test Case | Status |
+|-----------|--------|
+| Desktop (1920x1080) renders correctly | ✅ |
+| Tablet (768px) responsive breakpoints | ✅ |
+| Mobile (375px) touch interactions | ✅ |
+
+### Theme Toggle
+| Test Case | Status |
+|-----------|--------|
+| Toggle dark/light theme | ✅ |
+| Theme persists on page reload | ✅ |
+
+### Deployment Smoke Test
+| Test Case | Status |
+|-----------|--------|
+| Vercel deployment loads | ✅ |
+| API responds at /api/health | ✅ |
+| Static assets served correctly | ✅ |
+| SPA routing works (direct URL entry) | ✅ |
