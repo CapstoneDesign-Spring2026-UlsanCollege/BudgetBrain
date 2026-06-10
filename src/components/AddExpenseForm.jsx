@@ -116,8 +116,11 @@ const AddExpenseForm = ({ budgets }) => {
       .filter(Boolean);
 
     const amountPattern = /(?:rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
-    const totalKeywords = /(grand\s*)?total|amount\s*due|balance|net\s*amount|cash|paid/i;
-    const noisyAmountLine = /invoice|bill\s*no|phone|tel|vat|pan|date|time|qty|quantity/i;
+    const strongTotalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total/i;
+    const totalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total|(^|\s)total($|\s|:)|payable|due/i;
+    const subtotalKeywords = /sub\s*total|subtotal|taxable|before\s*tax/i;
+    const noisyAmountLine = /invoice\s*(no|#)|bill\s*(no|#)|phone|tel|mobile|vat\s*(no|#)|pan|date|time|table|token|order\s*(no|#)|qty|quantity|unit\s*price/i;
+    const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
 
     const candidates = [];
     lines.forEach((line, index) => {
@@ -125,14 +128,26 @@ const AddExpenseForm = ({ budgets }) => {
       matches.forEach((match) => {
         const value = Number(match[1].replace(/,/g, ""));
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
+        const hasStrongTotal = strongTotalKeywords.test(line);
+        const hasTotal = totalKeywords.test(line);
+        const isSubtotal = subtotalKeywords.test(line);
+        const isNoise = noisyAmountLine.test(line);
+        const isPaymentNoise = paymentNoise.test(line);
         candidates.push({
           value,
-          score: (totalKeywords.test(line) ? 100 : 0) - (noisyAmountLine.test(line) ? 40 : 0) + index / 100,
+          score:
+            (hasStrongTotal ? 300 : 0)
+            + (hasTotal ? 170 : 0)
+            - (isSubtotal ? 220 : 0)
+            - (isNoise ? 160 : 0)
+            - (isPaymentNoise && !hasTotal ? 90 : 0)
+            + index / 100,
         });
       });
     });
 
     const amount = candidates
+      .filter((candidate) => candidate.score > -120)
       .sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
 
     const merchant = lines.find((line) => (
@@ -184,15 +199,19 @@ const AddExpenseForm = ({ budgets }) => {
       [/shop|mall|clothes|fashion|shopping/, "shopping"],
     ].find(([pattern]) => pattern.test(lowerText))?.[1] || "other";
 
+    const itemTotal = itemLines.reduce((total, item) => total + Number(item.amount || 0), 0);
+    const amountTolerance = amount ? Math.max(5, amount * 0.08) : 0;
+    const itemLinesMatchTotal = itemLines.length > 0
+      && (!amount || Math.abs(itemTotal - amount) <= amountTolerance);
     const fallbackItem = amount
-      ? [{ name: merchant || "Receipt expense", amount: Math.round(amount) }]
+      ? [{ name: merchant || "Receipt total", amount: Math.round(amount) }]
       : [];
 
     return {
       amount,
-      name: merchant || "Receipt expense",
+      name: merchant || "Receipt total",
       category,
-      items: itemLines.length ? itemLines : fallbackItem,
+      items: itemLinesMatchTotal ? itemLines : fallbackItem,
     };
   };
 
