@@ -167,6 +167,27 @@ Open `http://localhost:5173` in your browser. You should see the BudgetBrain log
 - MongoDB Atlas connection strings contain credentials — keep them secure
 - The `.env` file is listed in `.gitignore` to prevent accidental commits
 
+## Final Deployment Checklist
+
+Before deploying to production, verify:
+
+- [x] Environment variables configured on Vercel (MONGO_URI, JWT_SECRET)
+- [x] RESEND_API_KEY and PASSWORD_RESET_FROM set (for email)
+- [x] PADDLEOCR_API_URL and PADDLEOCR_API_KEY set (if using OCR service)
+- [x] Build passes with 0 errors (`npm run build`)
+- [x] Vercel rewrites configured in vercel.json
+- [x] SPA fallback: all routes rewrite to index.html
+- [x] API routes rewrite to serverless function
+- [x] CORS configured for production frontend URL
+- [x] MongoDB Atlas IP whitelist configured
+- [x] Smoke test: visit live URL, register, create budget, add expense
+
+### Rollback Notes
+
+- Vercel retains deployment history — redeploy previous version if needed
+- Keep local `.env` backup for environment variables
+- MongoDB Atlas data persists independently of deployment
+
 ## Future Deployment Plan
 
 | Target | Status | Notes |
