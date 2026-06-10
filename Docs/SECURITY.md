@@ -42,9 +42,42 @@ PASSWORD_RESET_FROM=verified_sender_address
 
 Never commit these to the repository.
 
+## Final Security Notes
+
+### JWT Handling
+- Tokens expire after 7 days
+- Stored in localStorage (frontend)
+- Attached to requests via Axios interceptor
+- Consider HttpOnly cookies for enhanced security in production
+
+### Password Hashing
+- bcrypt with salt rounds
+- No plain-text passwords stored anywhere
+
+### Reset Code Security
+- 6-digit numeric codes
+- SHA-256 hashed before storage
+- 10-minute expiration
+- Maximum 5 failed attempts before lockout
+- Codes are one-time use
+
+### Environment Secrets
+- All secrets stored in environment variables
+- .env files are gitignored
+- Vercel environment variables configured via dashboard
+- Never log or expose secrets in client code
+
+### Student Project Limitations
+- No dedicated security audit performed
+- No penetration testing
+- Standard security practices applied but not exhaustive
+- Use strong, unique passwords
+
 ## Future Security Plans
 
-- Rate limiting on auth endpoints
+- Rate limiting on auth endpoints (partially implemented)
 - HTTPS enforced (already on Vercel)
 - Email verification on registration
 - API key rotation
+- Multi-factor authentication
+- HttpOnly cookie-based sessions
