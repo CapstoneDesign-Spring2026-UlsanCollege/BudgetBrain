@@ -97,13 +97,35 @@ Output: `dist`
 ## Documentation
 
 All docs are in the [Docs](/Docs) folder:
+
+### Quick Links
+| Resource | Link |
+|----------|------|
+| Docs Index | [Docs/README.md](Docs/README.md) |
+| Final Report | [Final Portfolio Information/FINAL_REPORT.md](Final%20Portfolio%20Information/FINAL_REPORT.md) |
+| Demo Script | [Final Portfolio Information/FINAL_DEMO_SCRIPT.md](Final%20Portfolio%20Information/FINAL_DEMO_SCRIPT.md) |
+| Release Notes | [Docs/RELEASE_NOTES_V1.md](Docs/RELEASE_NOTES_V1.md) |
+| Handoff Guide | [Docs/HANDOFF_GUIDE.md](Docs/HANDOFF_GUIDE.md) |
+| Weekly Reports | [Docs/weeks/](Docs/weeks/) |
+| Sprint Packets | [Docs/sprint-packets/](Docs/sprint-packets/) |
+
+### Core Documents
 - [Project Overview](Docs/PROJECT.md)
 - [Architecture](Docs/ARCHITECTURE_SKETCH.md)
 - [Design Doc](Docs/DESIGN_DOC_V1.md)
+- [System Architecture](Docs/SYSTEM_ARCHITECTURE.md)
 - [Wireframes](Docs/WIREFRAMES.md)
 - [User Stories](Docs/user_stories.md)
 - [Team Agreement](Docs/TEAM_AGREEMENT.md)
-- [Weekly Progress](Docs/weeks/)
+- [API Reference](Docs/API_REFERENCE.md)
+- [Database Design](Docs/DATABASE_DESIGN.md)
+- [Testing Plan](Docs/TESTING_PLAN.md)
+- [Deployment Guide](Docs/DEPLOYMENT_GUIDE.md)
+- [User Guide](Docs/USER_GUIDE.md)
+
+### Project Summaries
+- [Week 15 Final Summary](PROJECT/WEEK_15/README.md)
+- [Week 12 Summary](PROJECT/WEEK_12/README.md)
 
 ## License
 
