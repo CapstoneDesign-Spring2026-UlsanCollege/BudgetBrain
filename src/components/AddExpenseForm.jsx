@@ -158,6 +158,14 @@ const RECEIPT_LANGUAGE_COPY = {
 
 const getReceiptCopy = (language) => RECEIPT_LANGUAGE_COPY[language] || RECEIPT_LANGUAGE_COPY.en;
 
+const RECEIPT_DEFAULT_NAMES = {
+  en: "Receipt expense",
+  ne: "रसिद खर्च",
+  ko: "영수증 지출",
+};
+
+const getReceiptDefaultName = (language) => RECEIPT_DEFAULT_NAMES[language] || RECEIPT_DEFAULT_NAMES.en;
+
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state === "submitting";
@@ -258,7 +266,9 @@ const AddExpenseForm = ({ budgets }) => {
       matches.forEach((match) => {
         const value = normalizeReceiptAmount(match[1] || match[2]);
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
-        const hasStrongTotal = strongTotalKeywords.test(contextLine) || multilingualStrongTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const lineHasStrongTotal = strongTotalKeywords.test(line) || multilingualStrongTotalKeywords.test(line) || koreanStrongTotalKeywords.test(line);
+        const contextHasStrongTotal = strongTotalKeywords.test(contextLine) || multilingualStrongTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const hasStrongTotal = lineHasStrongTotal || contextHasStrongTotal;
         const hasTotal = totalKeywords.test(contextLine) || multilingualTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
         const isSubtotal = subtotalKeywords.test(contextLine) || multilingualSubtotalKeywords.test(contextLine) || koreanSubtotalKeywords.test(contextLine);
         const isNoise = noisyAmountLine.test(line) || multilingualNoisyAmountLine.test(line) || koreanNoisyAmountLine.test(line) || dateOrTimeNoise.test(line);
@@ -267,6 +277,7 @@ const AddExpenseForm = ({ budgets }) => {
         const isTinyReceiptFragment = hasKrwReceipt && value < 1000 && !hasStrongTotal && !hasCurrency;
         candidates.push({
           value,
+          highConfidence: lineHasStrongTotal || (hasCurrency && contextHasStrongTotal),
           score:
             (hasStrongTotal ? 300 : 0)
             + (hasTotal ? 170 : 0)
@@ -287,16 +298,17 @@ const AddExpenseForm = ({ budgets }) => {
         nextMatches.forEach((match) => {
           const value = normalizeReceiptAmount(match[1] || match[2]);
           if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
-          candidates.push({ value, score: 250 + index / 100 });
+          candidates.push({ value, highConfidence: true, score: 250 + index / 100 });
         });
       }
     });
 
     const scoredCandidates = candidates.filter((candidate) => candidate.score > -120);
+    const confidentCandidates = scoredCandidates.filter((candidate) => candidate.highConfidence);
     const meaningfulCandidates = hasKrwReceipt
-      ? scoredCandidates.filter((candidate) => candidate.value >= 1000)
-      : scoredCandidates;
-    const amount = (meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates)
+      ? confidentCandidates.filter((candidate) => candidate.value >= 1000)
+      : (confidentCandidates.length ? confidentCandidates : scoredCandidates);
+    const amount = (meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates.filter((candidate) => !hasKrwReceipt && candidate.value > 0))
       .sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
 
     const merchant = lines.find((line) => (
@@ -387,8 +399,9 @@ const AddExpenseForm = ({ budgets }) => {
   const applyParsedReceipt = async (parsed) => {
     const parsedCurrency = parsed.currency || BASE_CURRENCY;
     const storedAmount = await convertReceiptAmountToAccountingCurrency(parsed.amount, parsedCurrency);
+    const receiptName = getReceiptDefaultName(appLanguage);
 
-    if (focusRef.current) focusRef.current.value = parsed.name;
+    if (focusRef.current) focusRef.current.value = receiptName;
     if (amountRef.current) amountRef.current.value = storedAmount;
     const knownCategory = EXPENSE_CATEGORIES.some(([key]) => key === parsed.category);
     if (knownCategory) {
@@ -419,6 +432,14 @@ const AddExpenseForm = ({ budgets }) => {
 
       try {
         ocrText = await readWithPaddleOcr(enhancedImage);
+        try {
+          const originalText = await readWithPaddleOcr(imageSource);
+          if (originalText && !ocrText.includes(originalText)) {
+            ocrText = `${ocrText}\n${originalText}`;
+          }
+        } catch (originalErr) {
+          console.warn("Original receipt OCR pass failed:", originalErr.userMessage || originalErr.message);
+        }
       } catch (paddleErr) {
         console.warn("PaddleOCR unavailable, using browser OCR:", paddleErr.userMessage || paddleErr.message);
         provider = "browser OCR";
