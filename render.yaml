@@ -7,6 +7,6 @@ services:
     healthCheckPath: /health
     envVars:
       - key: PADDLEOCR_LANG
-        value: en
+        value: korean
       - key: OCR_API_KEY
         generateValue: true

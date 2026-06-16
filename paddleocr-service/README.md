@@ -44,6 +44,14 @@ PADDLEOCR_API_KEY=<Render generated OCR_API_KEY value>
 
 If you remove `OCR_API_KEY` from Render, leave `PADDLEOCR_API_KEY` empty in Vercel.
 
+For Korean receipts, keep this value in the PaddleOCR service environment:
+
+```env
+PADDLEOCR_LANG=korean
+```
+
+The BudgetBrain app also normalizes common receipt labels into English, Nepali, and Korean during review.
+
 ## Local Run
 
 ```sh

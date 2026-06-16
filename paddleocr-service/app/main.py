@@ -14,7 +14,7 @@ class OcrRequest(BaseModel):
 
 
 app = FastAPI(title="BudgetBrain PaddleOCR Service")
-ocr = PaddleOCR(use_angle_cls=True, lang=os.getenv("PADDLEOCR_LANG", "en"))
+ocr = PaddleOCR(use_angle_cls=True, lang=os.getenv("PADDLEOCR_LANG", "korean"))
 
 
 def require_api_key(authorization: str | None) -> None:

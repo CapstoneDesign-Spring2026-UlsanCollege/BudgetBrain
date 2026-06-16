@@ -81,6 +81,33 @@ const readWithPaddleOcr = async (imageSource) => {
   return res.data?.text || "";
 };
 
+const RECEIPT_NAME_TRANSLATIONS = [
+  { pattern: /^(grand\s*)?total|total\s*amount|amount\s*due|payable|합계|총액|총\s*합계|결제\s*금액|청구\s*금액|जम्मा|कुल/i, label: "Receipt total / जम्मा / 합계" },
+  { pattern: /sub\s*total|subtotal|소계|공급\s*가액|उपजम्मा/i, label: "Subtotal / उपजम्मा / 소계" },
+  { pattern: /tax|vat|부가세|세금|कर/i, label: "Tax / कर / 세금" },
+  { pattern: /discount|할인|छुट/i, label: "Discount / छुट / 할인" },
+  { pattern: /cash|현금|नगद/i, label: "Cash payment / नगद / 현금" },
+  { pattern: /card|카드|credit|debit|कार्ड/i, label: "Card payment / कार्ड / 카드" },
+  { pattern: /change|거스름돈|फिर्ता/i, label: "Change / फिर्ता / 거스름돈" },
+  { pattern: /coffee|cafe|카페|커피/i, label: "Cafe / क्याफे / 카페" },
+  { pattern: /restaurant|food|식당|음식|meal|खाना/i, label: "Food / खाना / 음식" },
+  { pattern: /mart|market|store|마트|편의점|슈퍼|grocery|किराना/i, label: "Groceries / किराना / 식료품" },
+  { pattern: /taxi|bus|subway|transport|택시|버스|지하철|교통|यातायात/i, label: "Transport / यातायात / 교통" },
+];
+
+const makeReceiptNameReadable = (rawName, fallback = "Receipt expense") => {
+  const cleaned = String(rawName || "")
+    .replace(/^[*\-\d.\s:]+/, "")
+    .replace(/[(){}\[\]]/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (!cleaned) return fallback;
+
+  const translated = RECEIPT_NAME_TRANSLATIONS.find(({ pattern }) => pattern.test(cleaned));
+  return translated ? translated.label : cleaned;
+};
+
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -151,6 +178,11 @@ const AddExpenseForm = ({ budgets }) => {
     const subtotalKeywords = /sub\s*total|subtotal|taxable|before\s*tax/i;
     const noisyAmountLine = /invoice\s*(no|#)|bill\s*(no|#)|phone|tel|mobile|vat\s*(no|#)|pan|date|time|table|token|order\s*(no|#)|qty|quantity|unit\s*price/i;
     const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
+    const multilingualStrongTotalKeywords = /합계|총액|총\s*합계|결제\s*금액|승인\s*금액|청구\s*금액|जम्मा|कुल/i;
+    const multilingualTotalKeywords = /합계|총액|총\s*합계|결제\s*금액|승인\s*금액|청구\s*금액|받을\s*금액|जम्मा|कुल|तिर्नुपर्ने/i;
+    const multilingualSubtotalKeywords = /소계|공급\s*가액|과세\s*물품|면세\s*물품|उपजम्मा/i;
+    const multilingualNoisyAmountLine = /사업자|대표|전화|주소|일시|날짜|시간|승인\s*번호|카드\s*번호|영수증|수량|단가|क्रम|फोन|मिति/i;
+    const multilingualPaymentNoise = /거스름돈|받은\s*금액|현금|카드|결제|승인|नगद|कार्ड|भुक्तानी/i;
 
     const candidates = [];
     normalizedLines.forEach((line, index) => {
@@ -158,11 +190,11 @@ const AddExpenseForm = ({ budgets }) => {
       matches.forEach((match) => {
         const value = Number(match[1].replace(/,/g, ""));
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
-        const hasStrongTotal = strongTotalKeywords.test(line);
-        const hasTotal = totalKeywords.test(line);
-        const isSubtotal = subtotalKeywords.test(line);
-        const isNoise = noisyAmountLine.test(line);
-        const isPaymentNoise = paymentNoise.test(line);
+        const hasStrongTotal = strongTotalKeywords.test(line) || multilingualStrongTotalKeywords.test(line);
+        const hasTotal = totalKeywords.test(line) || multilingualTotalKeywords.test(line);
+        const isSubtotal = subtotalKeywords.test(line) || multilingualSubtotalKeywords.test(line);
+        const isNoise = noisyAmountLine.test(line) || multilingualNoisyAmountLine.test(line);
+        const isPaymentNoise = paymentNoise.test(line) || multilingualPaymentNoise.test(line);
         candidates.push({
           value,
           score:
@@ -174,7 +206,7 @@ const AddExpenseForm = ({ budgets }) => {
             + index / 100,
         });
       });
-      if (totalKeywords.test(line) && matches.length === 0 && normalizedLines[index + 1]) {
+      if ((totalKeywords.test(line) || multilingualTotalKeywords.test(line)) && matches.length === 0 && normalizedLines[index + 1]) {
         const nextMatches = [...normalizedLines[index + 1].matchAll(amountPattern)];
         nextMatches.forEach((match) => {
           const value = Number(match[1].replace(/,/g, ""));
@@ -189,9 +221,11 @@ const AddExpenseForm = ({ budgets }) => {
       .sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
 
     const merchant = lines.find((line) => (
-      /[a-z]/i.test(line)
+      /[a-z가-힣\u0900-\u097F]/i.test(line)
       && !totalKeywords.test(line)
+      && !multilingualTotalKeywords.test(line)
       && !noisyAmountLine.test(line)
+      && !multilingualNoisyAmountLine.test(line)
       && line.length >= 3
       && line.length <= 48
     ));
@@ -209,10 +243,10 @@ const AddExpenseForm = ({ budgets }) => {
 
         if (!name || !Number.isFinite(itemAmount) || itemAmount <= 0) return null;
         if (name.length < 3 || name.length > 60) return null;
-        if (totalKeywords.test(name) || noisyAmountLine.test(name)) return null;
-        if (/subtotal|discount|change|cash|card|tax|vat|service|round/i.test(name)) return null;
+        if (totalKeywords.test(name) || multilingualTotalKeywords.test(name) || noisyAmountLine.test(name) || multilingualNoisyAmountLine.test(name)) return null;
+        if (/subtotal|discount|change|cash|card|tax|vat|service|round|소계|할인|거스름돈|현금|카드|부가세|सेवा|कर|छुट/i.test(name)) return null;
 
-        return { name, amount: Math.round(itemAmount) };
+        return { name: makeReceiptNameReadable(name), amount: Math.round(itemAmount) };
       })
       .filter(Boolean)
       .filter((item, index, arr) => (
@@ -225,29 +259,30 @@ const AddExpenseForm = ({ budgets }) => {
 
     const lowerText = text.toLowerCase();
     const category = [
-      [/restaurant|cafe|coffee|food|pizza|burger|bakery|grocery|mart|store|supermarket/, "food"],
-      [/taxi|bus|fuel|petrol|parking|transport|uber|pathao/, "transport"],
-      [/rent|apartment|house|housing/, "housing"],
-      [/electric|water|internet|wifi|utility|utilities/, "utilities"],
-      [/hospital|clinic|pharmacy|medicine|health/, "healthcare"],
-      [/movie|cinema|game|music|entertainment/, "entertainment"],
-      [/school|college|book|tuition|education/, "education"],
-      [/hotel|flight|travel|airlines/, "travel"],
-      [/salon|beauty|personal/, "personal"],
-      [/shop|mall|clothes|fashion|shopping/, "shopping"],
+      [/restaurant|cafe|coffee|food|pizza|burger|bakery|grocery|mart|store|supermarket|식당|음식|카페|커피|마트|편의점|슈퍼|빵|खाना|क्याफे|किराना/, "food"],
+      [/taxi|bus|fuel|petrol|parking|transport|uber|pathao|택시|버스|지하철|주유|교통|यातायात|बस|ट्याक्सी/, "transport"],
+      [/rent|apartment|house|housing|월세|임대|아파트|집|भाडा|घर/, "housing"],
+      [/electric|water|internet|wifi|utility|utilities|전기|수도|인터넷|와이파이|공과금|बिजुली|पानी|इन्टरनेट/, "utilities"],
+      [/hospital|clinic|pharmacy|medicine|health|병원|약국|의료|약|अस्पताल|औषधी|स्वास्थ्य/, "healthcare"],
+      [/movie|cinema|game|music|entertainment|영화|게임|노래|오락|मनोरञ्जन/, "entertainment"],
+      [/school|college|book|tuition|education|학교|학원|책|교육|विद्यालय|कलेज|किताब|शिक्षा/, "education"],
+      [/hotel|flight|travel|airlines|호텔|항공|여행|होटल|यात्रा/, "travel"],
+      [/salon|beauty|personal|미용|헤어|개인|सैलुन|व्यक्तिगत/, "personal"],
+      [/shop|mall|clothes|fashion|shopping|쇼핑|백화점|옷|패션|किनमेल|लुगा/, "shopping"],
     ].find(([pattern]) => pattern.test(lowerText))?.[1] || "other";
 
     const itemTotal = itemLines.reduce((total, item) => total + Number(item.amount || 0), 0);
     const amountTolerance = amount ? Math.max(5, amount * 0.08) : 0;
     const itemLinesMatchTotal = itemLines.length > 0
       && (!amount || Math.abs(itemTotal - amount) <= amountTolerance);
+    const readableMerchant = makeReceiptNameReadable(merchant, "Receipt total / जम्मा / 합계");
     const fallbackItem = amount
-      ? [{ name: merchant || "Receipt total", amount: Math.round(amount) }]
+      ? [{ name: readableMerchant, amount: Math.round(amount) }]
       : [];
 
     return {
       amount,
-      name: merchant || "Receipt total",
+      name: readableMerchant,
       category,
       items: itemLinesMatchTotal ? itemLines : fallbackItem,
     };
@@ -295,7 +330,7 @@ const AddExpenseForm = ({ budgets }) => {
         provider = "browser OCR";
         setScanStatus("Reading receipt with browser OCR...");
         const Tesseract = await loadTesseract();
-        const { data } = await Tesseract.recognize(imageSource, "eng", {
+        const { data } = await Tesseract.recognize(imageSource, "eng+kor+nep", {
           logger: (message) => {
             if (message.status === "recognizing text") {
               setScanStatus(`Reading receipt ${Math.round((message.progress || 0) * 100)}%`);
