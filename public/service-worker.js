@@ -1,4 +1,4 @@
-const CACHE_NAME = 'budgetbrain-shell-v10';
+const CACHE_NAME = 'budgetbrain-shell-v11';
 const APP_SHELL = ['/', '/manifest.webmanifest', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {

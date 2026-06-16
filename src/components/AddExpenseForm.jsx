@@ -234,7 +234,7 @@ const AddExpenseForm = ({ budgets }) => {
     const hasKrwReceipt = /[\u20A9\uC6D0]|krw|won|[\u3131-\u318E\uAC00-\uD7A3]/i.test(normalizedText);
     const hasCurrencySymbol = /[\u20A9\uC6D0₹]|rs\.?|npr|krw|won/i;
 
-    const amountPattern = /(?:rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
+    const amountPattern = /(?:\$|rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
     const strongTotalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total/i;
     const totalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total|(^|\s)total($|\s|:)|payable|due/i;
     const subtotalKeywords = /sub\s*total|subtotal|taxable|before\s*tax/i;
@@ -305,11 +305,36 @@ const AddExpenseForm = ({ budgets }) => {
 
     const scoredCandidates = candidates.filter((candidate) => candidate.score > -120);
     const confidentCandidates = scoredCandidates.filter((candidate) => candidate.highConfidence);
-    const meaningfulCandidates = hasKrwReceipt
-      ? confidentCandidates.filter((candidate) => candidate.value >= 1000)
-      : (confidentCandidates.length ? confidentCandidates : scoredCandidates);
-    const amount = (meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates.filter((candidate) => !hasKrwReceipt && candidate.value > 0))
-      .sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
+    const amount = (() => {
+      const meaningfulCandidates = hasKrwReceipt
+        ? scoredCandidates.filter((candidate) => candidate.value > 0)
+        : (confidentCandidates.length ? confidentCandidates : scoredCandidates);
+      const candidates = meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates.filter((c) => c.value > 0);
+      if (candidates.length) {
+        return candidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
+      }
+      return scoredCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value || 0;
+    })();
+
+    const finalAmount = (() => {
+      const candidateAmount = amount && amount > 0
+        ? amount
+        : (scoredCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value || 0);
+      if (candidateAmount && candidateAmount > 0) return candidateAmount;
+
+      const fallbackNumbers = normalizedLines
+        .slice(Math.floor(normalizedLines.length * 0.35))
+        .flatMap((line) => {
+          if (dateOrTimeNoise.test(line) || noisyAmountLine.test(line) || koreanNoisyAmountLine.test(line)) return [];
+          return [...line.matchAll(groupedAmountPattern), ...line.matchAll(krwAmountPattern), ...line.matchAll(amountPattern)]
+            .map((match) => normalizeReceiptAmount(match[1] || match[2]))
+            .filter((value) => Number.isFinite(value) && value > 0 && value < 10000000);
+        })
+        .filter((value) => !hasKrwReceipt || value >= 1000);
+
+      return fallbackNumbers.length ? Math.max(...fallbackNumbers) : 0;
+    })();
+
 
     const merchant = lines.find((line) => (
       /[a-z가-힣\u0900-\u097F]/i.test(line)
@@ -363,16 +388,16 @@ const AddExpenseForm = ({ budgets }) => {
     ].find(([pattern]) => pattern.test(lowerText))?.[1] || "other";
 
     const itemTotal = itemLines.reduce((total, item) => total + Number(item.amount || 0), 0);
-    const amountTolerance = amount ? Math.max(5, amount * 0.08) : 0;
+    const amountTolerance = finalAmount ? Math.max(5, finalAmount * 0.08) : 0;
     const itemLinesMatchTotal = itemLines.length > 0
-      && (!amount || Math.abs(itemTotal - amount) <= amountTolerance);
+      && (!finalAmount || Math.abs(itemTotal - finalAmount) <= amountTolerance);
     const readableMerchant = makeReceiptNameReadable(merchant, "Receipt total / जम्मा / 합계");
-    const fallbackItem = amount
-      ? [{ name: readableMerchant, amount: Math.round(amount) }]
+    const fallbackItem = finalAmount
+      ? [{ name: readableMerchant, amount: Math.round(finalAmount) }]
       : [];
 
     return {
-      amount,
+      amount: finalAmount,
       name: readableMerchant,
       currency: hasKrwReceipt ? "KRW" : "NPR",
       category,
@@ -456,7 +481,7 @@ const AddExpenseForm = ({ budgets }) => {
       }
 
       const parsed = parseReceiptText(ocrText);
-      if (!parsed.amount) {
+      if (parsed.amount == null) {
         toast.error("I could not find a total amount on that receipt.");
         return;
       }
