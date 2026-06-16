@@ -241,6 +241,8 @@ const AddExpenseForm = ({ budgets }) => {
     const noisyAmountLine = /invoice\s*(no|#)|bill\s*(no|#)|phone|tel|mobile|vat\s*(no|#)|pan|date|time|table|token|order\s*(no|#)|qty|quantity|unit\s*price/i;
     const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
     const koreanStrongTotalKeywords = /\uD569\uACC4|\uCD1D\uC561|\uCD1D\s*\uD569\uACC4|\uACB0\uC81C\s*\uAE08\uC561|\uC2B9\uC778\s*\uAE08\uC561|\uCCAD\uAD6C\s*\uAE08\uC561|\uBC1B\uC744\s*\uAE08\uC561|\uD310\uB9E4\s*\uAE08\uC561|\uB9E4\uCD9C\s*\uAE08\uC561/i;
+    const paidTotalKeywords = /paid\s*amount|amount\s*paid|payment\s*amount|card\s*amount|charged\s*amount|sale\s*amount|paid\s*total/i;
+    const koreanPaidTotalKeywords = /\uACB0\uC81C|\uACB0\uC81C\s*\uAE08\uC561|\uC2B9\uC778\s*\uAE08\uC561|\uCE74\uB4DC\s*\uAE08\uC561|\uD604\uAE08\s*\uAE08\uC561|\uBC1B\uC740\s*\uAE08\uC561|\uD310\uB9E4\s*\uAE08\uC561/i;
     const koreanSubtotalKeywords = /\uC18C\uACC4|\uACF5\uAE09\s*\uAC00\uC561|\uACFC\uC138\s*\uBB3C\uD488|\uBA74\uC138\s*\uBB3C\uD488/i;
     const koreanNoisyAmountLine = /\uC0AC\uC5C5\uC790|\uB300\uD45C|\uC804\uD654|\uC8FC\uC18C|\uC77C\uC2DC|\uB0A0\uC9DC|\uC2DC\uAC04|\uC2B9\uC778\s*\uBC88\uD638|\uCE74\uB4DC\s*\uBC88\uD638|\uC601\uC218\uC99D|\uC218\uB7C9|\uB2E8\uAC00/i;
     const koreanPaymentNoise = /\uAC70\uC2A4\uB984\uB3C8|\uBC1B\uC740\s*\uAE08\uC561|\uD604\uAE08|\uCE74\uB4DC|\uACB0\uC81C|\uC2B9\uC778/i;
@@ -268,8 +270,9 @@ const AddExpenseForm = ({ budgets }) => {
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
         const lineHasStrongTotal = strongTotalKeywords.test(line) || multilingualStrongTotalKeywords.test(line) || koreanStrongTotalKeywords.test(line);
         const contextHasStrongTotal = strongTotalKeywords.test(contextLine) || multilingualStrongTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const contextHasPaidTotal = paidTotalKeywords.test(contextLine) || koreanPaidTotalKeywords.test(contextLine);
         const hasStrongTotal = lineHasStrongTotal || contextHasStrongTotal;
-        const hasTotal = totalKeywords.test(contextLine) || multilingualTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const hasTotal = totalKeywords.test(contextLine) || multilingualTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine) || contextHasPaidTotal;
         const isSubtotal = subtotalKeywords.test(contextLine) || multilingualSubtotalKeywords.test(contextLine) || koreanSubtotalKeywords.test(contextLine);
         const isNoise = noisyAmountLine.test(line) || multilingualNoisyAmountLine.test(line) || koreanNoisyAmountLine.test(line) || dateOrTimeNoise.test(line);
         const isPaymentNoise = paymentNoise.test(line) || multilingualPaymentNoise.test(line) || koreanPaymentNoise.test(line);
@@ -277,10 +280,14 @@ const AddExpenseForm = ({ budgets }) => {
         const isTinyReceiptFragment = hasKrwReceipt && value < 1000 && !hasStrongTotal && !hasCurrency;
         candidates.push({
           value,
-          highConfidence: lineHasStrongTotal || (hasCurrency && contextHasStrongTotal),
+          hasCurrency,
+          isPaidTotal: lineHasStrongTotal || contextHasPaidTotal || (hasCurrency && (contextHasStrongTotal || contextHasPaidTotal)),
+          linePosition: index / Math.max(1, normalizedLines.length - 1),
+          highConfidence: lineHasStrongTotal || contextHasPaidTotal || (hasCurrency && (contextHasStrongTotal || contextHasPaidTotal)),
           score:
             (hasStrongTotal ? 300 : 0)
             + (hasTotal ? 170 : 0)
+            + (contextHasPaidTotal ? 230 : 0)
             + (hasCurrency ? 80 : 0)
             + (index / Math.max(1, normalizedLines.length - 1)) * 30
             - (isSubtotal ? 220 : 0)
@@ -298,32 +305,62 @@ const AddExpenseForm = ({ budgets }) => {
         nextMatches.forEach((match) => {
           const value = normalizeReceiptAmount(match[1] || match[2]);
           if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
-          candidates.push({ value, highConfidence: true, score: 250 + index / 100 });
+          candidates.push({
+            value,
+            hasCurrency: hasCurrencySymbol.test(normalizedLines[index + 1]),
+            isPaidTotal: true,
+            linePosition: index / Math.max(1, normalizedLines.length - 1),
+            highConfidence: true,
+            score: 250 + index / 100,
+          });
         });
       }
     });
 
     const scoredCandidates = candidates.filter((candidate) => candidate.score > -120);
-    const confidentCandidates = scoredCandidates.filter((candidate) => candidate.highConfidence);
     const amount = (() => {
-      const meaningfulCandidates = hasKrwReceipt
-        ? scoredCandidates.filter((candidate) => candidate.value > 0)
-        : (confidentCandidates.length ? confidentCandidates : scoredCandidates);
-      const candidates = meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates.filter((c) => c.value > 0);
-      if (candidates.length) {
-        return candidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
+      const paidCandidates = scoredCandidates.filter((candidate) => (
+        candidate.isPaidTotal
+        && candidate.value > 0
+        && (!hasKrwReceipt || candidate.value >= 1000)
+      ));
+      if (paidCandidates.length) {
+        return paidCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
       }
-      return scoredCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value || 0;
+
+      const bottomCurrencyCandidates = scoredCandidates.filter((candidate) => (
+        candidate.hasCurrency
+        && candidate.linePosition >= 0.35
+        && candidate.value > 0
+        && (!hasKrwReceipt || candidate.value >= 1000)
+      ));
+      if (bottomCurrencyCandidates.length) {
+        return bottomCurrencyCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
+      }
+
+      return 0;
     })();
 
     const finalAmount = (() => {
-      const candidateAmount = amount && amount > 0
-        ? amount
-        : (scoredCandidates.sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value || 0);
-      if (candidateAmount && candidateAmount > 0) return candidateAmount;
+      if (amount && amount > 0) return amount;
 
       const fallbackNumbers = normalizedLines
         .slice(Math.floor(normalizedLines.length * 0.35))
+        .flatMap((line) => {
+          if (dateOrTimeNoise.test(line) || noisyAmountLine.test(line) || koreanNoisyAmountLine.test(line)) return [];
+          const hasPaidHint = totalKeywords.test(line) || koreanStrongTotalKeywords.test(line) || paidTotalKeywords.test(line) || koreanPaidTotalKeywords.test(line);
+          const hasCurrencyHint = hasCurrencySymbol.test(line);
+          if (!hasPaidHint && !hasCurrencyHint && hasKrwReceipt) return [];
+          return [...line.matchAll(krwAmountPattern), ...line.matchAll(groupedAmountPattern), ...line.matchAll(amountPattern)]
+            .map((match) => normalizeReceiptAmount(match[1] || match[2]))
+            .filter((value) => Number.isFinite(value) && value > 0 && value < 10000000);
+        })
+        .filter((value) => !hasKrwReceipt || value >= 1000);
+
+      if (fallbackNumbers.length) return Math.max(...fallbackNumbers);
+
+      const bottomNumbers = normalizedLines
+        .slice(Math.floor(normalizedLines.length * 0.55))
         .flatMap((line) => {
           if (dateOrTimeNoise.test(line) || noisyAmountLine.test(line) || koreanNoisyAmountLine.test(line)) return [];
           return [...line.matchAll(groupedAmountPattern), ...line.matchAll(krwAmountPattern), ...line.matchAll(amountPattern)]
@@ -332,7 +369,7 @@ const AddExpenseForm = ({ budgets }) => {
         })
         .filter((value) => !hasKrwReceipt || value >= 1000);
 
-      return fallbackNumbers.length ? Math.max(...fallbackNumbers) : 0;
+      return bottomNumbers.length ? Math.max(...bottomNumbers) : 0;
     })();
 
 
