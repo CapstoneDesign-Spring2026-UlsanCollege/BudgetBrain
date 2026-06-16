@@ -75,6 +75,42 @@ const imageSourceToDataUrl = (imageSource) => new Promise((resolve, reject) => {
   reader.readAsDataURL(imageSource);
 });
 
+const enhanceReceiptImage = async (imageSource) => {
+  const imageUrl = await imageSourceToDataUrl(imageSource);
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = imageUrl;
+  });
+
+  const maxWidth = 1800;
+  const scale = Math.min(2, Math.max(1, maxWidth / image.width));
+  const width = Math.round(image.width * scale);
+  const height = Math.round(image.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(image, 0, 0, width, height);
+
+  const imageData = context.getImageData(0, 0, width, height);
+  const { data } = imageData;
+  for (let index = 0; index < data.length; index += 4) {
+    const gray = (data[index] * 0.299) + (data[index + 1] * 0.587) + (data[index + 2] * 0.114);
+    const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+    const sharpened = contrasted > 190 ? 255 : contrasted < 80 ? 0 : contrasted;
+    data[index] = sharpened;
+    data[index + 1] = sharpened;
+    data[index + 2] = sharpened;
+  }
+
+  context.putImageData(imageData, 0, 0);
+  return canvas.toDataURL("image/jpeg", 0.92);
+};
+
 const readWithPaddleOcr = async (imageSource) => {
   const image = await imageSourceToDataUrl(imageSource);
   const res = await api.post("/ocr/receipt", { image });
@@ -188,6 +224,7 @@ const AddExpenseForm = ({ budgets }) => {
       return Number(compactValue);
     };
     const hasKrwReceipt = /[\u20A9\uC6D0]|krw|won|[\u3131-\u318E\uAC00-\uD7A3]/i.test(normalizedText);
+    const hasCurrencySymbol = /[\u20A9\uC6D0₹]|rs\.?|npr|krw|won/i;
 
     const amountPattern = /(?:rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
     const strongTotalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total/i;
@@ -195,6 +232,11 @@ const AddExpenseForm = ({ budgets }) => {
     const subtotalKeywords = /sub\s*total|subtotal|taxable|before\s*tax/i;
     const noisyAmountLine = /invoice\s*(no|#)|bill\s*(no|#)|phone|tel|mobile|vat\s*(no|#)|pan|date|time|table|token|order\s*(no|#)|qty|quantity|unit\s*price/i;
     const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
+    const koreanStrongTotalKeywords = /\uD569\uACC4|\uCD1D\uC561|\uCD1D\s*\uD569\uACC4|\uACB0\uC81C\s*\uAE08\uC561|\uC2B9\uC778\s*\uAE08\uC561|\uCCAD\uAD6C\s*\uAE08\uC561|\uBC1B\uC744\s*\uAE08\uC561|\uD310\uB9E4\s*\uAE08\uC561|\uB9E4\uCD9C\s*\uAE08\uC561/i;
+    const koreanSubtotalKeywords = /\uC18C\uACC4|\uACF5\uAE09\s*\uAC00\uC561|\uACFC\uC138\s*\uBB3C\uD488|\uBA74\uC138\s*\uBB3C\uD488/i;
+    const koreanNoisyAmountLine = /\uC0AC\uC5C5\uC790|\uB300\uD45C|\uC804\uD654|\uC8FC\uC18C|\uC77C\uC2DC|\uB0A0\uC9DC|\uC2DC\uAC04|\uC2B9\uC778\s*\uBC88\uD638|\uCE74\uB4DC\s*\uBC88\uD638|\uC601\uC218\uC99D|\uC218\uB7C9|\uB2E8\uAC00/i;
+    const koreanPaymentNoise = /\uAC70\uC2A4\uB984\uB3C8|\uBC1B\uC740\s*\uAE08\uC561|\uD604\uAE08|\uCE74\uB4DC|\uACB0\uC81C|\uC2B9\uC778/i;
+    const dateOrTimeNoise = /\b(?:20\d{2}|19\d{2})[./-]\d{1,2}[./-]\d{1,2}\b|\b\d{1,2}:\d{2}(?::\d{2})?\b/;
     const groupedAmountPattern = /([0-9]{1,3}(?:[\s,][0-9]{3})+(?:\.[0-9]{1,2})?)/g;
     const krwAmountPattern = /(?:\u20A9|krw|won|\uC6D0)\s*([0-9][0-9,.\s]{0,14})|([0-9][0-9,.\s]{0,14})\s*(?:\u20A9|krw|won|\uC6D0)/gi;
     const multilingualStrongTotalKeywords = /합계|총액|총\s*합계|결제\s*금액|승인\s*금액|청구\s*금액|जम्मा|कुल/i;
@@ -205,6 +247,9 @@ const AddExpenseForm = ({ budgets }) => {
 
     const candidates = [];
     normalizedLines.forEach((line, index) => {
+      const previousLine = normalizedLines[index - 1] || "";
+      const nextLine = normalizedLines[index + 1] || "";
+      const contextLine = `${previousLine} ${line} ${nextLine}`;
       const matches = [
         ...line.matchAll(amountPattern),
         ...line.matchAll(groupedAmountPattern),
@@ -213,23 +258,27 @@ const AddExpenseForm = ({ budgets }) => {
       matches.forEach((match) => {
         const value = normalizeReceiptAmount(match[1] || match[2]);
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
-        const hasStrongTotal = strongTotalKeywords.test(line) || multilingualStrongTotalKeywords.test(line);
-        const hasTotal = totalKeywords.test(line) || multilingualTotalKeywords.test(line);
-        const isSubtotal = subtotalKeywords.test(line) || multilingualSubtotalKeywords.test(line);
-        const isNoise = noisyAmountLine.test(line) || multilingualNoisyAmountLine.test(line);
-        const isPaymentNoise = paymentNoise.test(line) || multilingualPaymentNoise.test(line);
+        const hasStrongTotal = strongTotalKeywords.test(contextLine) || multilingualStrongTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const hasTotal = totalKeywords.test(contextLine) || multilingualTotalKeywords.test(contextLine) || koreanStrongTotalKeywords.test(contextLine);
+        const isSubtotal = subtotalKeywords.test(contextLine) || multilingualSubtotalKeywords.test(contextLine) || koreanSubtotalKeywords.test(contextLine);
+        const isNoise = noisyAmountLine.test(line) || multilingualNoisyAmountLine.test(line) || koreanNoisyAmountLine.test(line) || dateOrTimeNoise.test(line);
+        const isPaymentNoise = paymentNoise.test(line) || multilingualPaymentNoise.test(line) || koreanPaymentNoise.test(line);
+        const hasCurrency = hasCurrencySymbol.test(line);
+        const isTinyReceiptFragment = hasKrwReceipt && value < 1000 && !hasStrongTotal && !hasCurrency;
         candidates.push({
           value,
           score:
             (hasStrongTotal ? 300 : 0)
             + (hasTotal ? 170 : 0)
+            + (hasCurrency ? 80 : 0)
+            + (index / Math.max(1, normalizedLines.length - 1)) * 30
             - (isSubtotal ? 220 : 0)
             - (isNoise ? 160 : 0)
             - (isPaymentNoise && !hasTotal ? 90 : 0)
-            + index / 100,
+            - (isTinyReceiptFragment ? 260 : 0),
         });
       });
-      if ((totalKeywords.test(line) || multilingualTotalKeywords.test(line)) && matches.length === 0 && normalizedLines[index + 1]) {
+      if ((totalKeywords.test(line) || multilingualTotalKeywords.test(line) || koreanStrongTotalKeywords.test(line)) && matches.length === 0 && normalizedLines[index + 1]) {
         const nextMatches = [
           ...normalizedLines[index + 1].matchAll(amountPattern),
           ...normalizedLines[index + 1].matchAll(groupedAmountPattern),
@@ -364,17 +413,18 @@ const AddExpenseForm = ({ budgets }) => {
     setScanStatus("Reading receipt with PaddleOCR...");
 
     try {
+      const enhancedImage = await enhanceReceiptImage(imageSource);
       let ocrText = "";
       let provider = "PaddleOCR";
 
       try {
-        ocrText = await readWithPaddleOcr(imageSource);
+        ocrText = await readWithPaddleOcr(enhancedImage);
       } catch (paddleErr) {
         console.warn("PaddleOCR unavailable, using browser OCR:", paddleErr.userMessage || paddleErr.message);
         provider = "browser OCR";
         setScanStatus("Reading receipt with browser OCR...");
         const Tesseract = await loadTesseract();
-        const { data } = await Tesseract.recognize(imageSource, "eng+kor+nep", {
+        const { data } = await Tesseract.recognize(enhancedImage, "eng+kor+nep", {
           logger: (message) => {
             if (message.status === "recognizing text") {
               setScanStatus(`Reading receipt ${Math.round((message.progress || 0) * 100)}%`);
