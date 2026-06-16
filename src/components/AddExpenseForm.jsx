@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useFetcher, useRevalidator } from "react-router-dom";
+import { useFetcher } from "react-router-dom";
 import { toast } from "react-toastify";
-import { CameraIcon, PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { BASE_CURRENCY, createExpense, getSelectedLanguage } from "../helpers";
+import { CameraIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import { BASE_CURRENCY, getSelectedLanguage } from "../helpers";
 import api from "../api";
 
 export const EXPENSE_CATEGORIES = [
@@ -111,62 +111,25 @@ const makeReceiptNameReadable = (rawName, fallback = "Receipt expense") => {
 const RECEIPT_LANGUAGE_COPY = {
   en: {
     uploadReceipt: "Upload receipt",
-    liveScan: "Live scan",
-    detectedTitle: "Detected receipt transactions",
-    editHint: "Edit the items, uncheck anything wrong, then save them.",
-    receiptTotal: "Receipt total",
-    totalHint: "This total will be used for the budget if item rows do not match.",
-    saveDetected: "Save detected transactions",
-    saving: "Saving...",
   },
   ne: {
     uploadReceipt: "रसिद अपलोड गर्नुहोस्",
-    liveScan: "लाइभ स्क्यान",
-    detectedTitle: "पत्ता लागेका रसिद कारोबारहरू",
-    editHint: "गलत कुरा हटाउनुहोस्, चाहिएको आइटम सच्याउनुहोस्, अनि सेभ गर्नुहोस्।",
-    receiptTotal: "रसिद जम्मा",
-    totalHint: "आइटमहरू नमिलेमा यो जम्मा रकम बजेटमा प्रयोग हुन्छ।",
-    saveDetected: "पत्ता लागेका कारोबार सेभ गर्नुहोस्",
-    saving: "सेभ हुँदैछ...",
   },
   ko: {
     uploadReceipt: "영수증 업로드",
-    liveScan: "실시간 스캔",
-    detectedTitle: "감지된 영수증 거래",
-    editHint: "항목을 수정하고 잘못된 항목은 선택 해제한 뒤 저장하세요.",
-    receiptTotal: "영수증 합계",
-    totalHint: "항목 합계가 맞지 않으면 이 합계 금액을 예산에 사용합니다.",
-    saveDetected: "감지된 거래 저장",
-    saving: "저장 중...",
   },
 };
 
 const getReceiptCopy = (language) => RECEIPT_LANGUAGE_COPY[language] || RECEIPT_LANGUAGE_COPY.en;
 
-const formatDetectedReceiptTotal = (amount, currency) => {
-  if (currency === "KRW") return `₩${Number(amount || 0).toLocaleString()}`;
-  return `Rs. ${Number(amount || 0).toLocaleString()}`;
-};
-
-const formatStoredReceiptTotal = (amount) => `Rs. ${Number(amount || 0).toLocaleString()}`;
-
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
-  const revalidator = useRevalidator();
   const isSubmitting = fetcher.state === "submitting";
   const [isScanningReceipt, setIsScanningReceipt] = useState(false);
-  const [isSavingReceiptItems, setIsSavingReceiptItems] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
   const [categoryChoice, setCategoryChoice] = useState("other");
   const [customCategory, setCustomCategory] = useState("");
-  const [receiptItems, setReceiptItems] = useState([]);
-  const [receiptTotalAmount, setReceiptTotalAmount] = useState(null);
-  const [receiptMerchantName, setReceiptMerchantName] = useState("");
-  const [receiptCurrency, setReceiptCurrency] = useState("NPR");
-  const [receiptStoredTotalAmount, setReceiptStoredTotalAmount] = useState(null);
   const [appLanguage, setAppLanguage] = useState(getSelectedLanguage());
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [cameraError, setCameraError] = useState("");
   const formRef = useRef();
   const focusRef = useRef();
   const amountRef = useRef();
@@ -174,9 +137,6 @@ const AddExpenseForm = ({ budgets }) => {
   const customCategoryRef = useRef();
   const budgetRef = useRef();
   const receiptInputRef = useRef();
-  const videoRef = useRef();
-  const canvasRef = useRef();
-  const streamRef = useRef(null);
   const previousFetcherState = useRef(fetcher.state);
 
   const finalCategory = categoryChoice === "custom"
@@ -191,60 +151,17 @@ const AddExpenseForm = ({ budgets }) => {
       formRef.current.reset();
       setCategoryChoice("other");
       setCustomCategory("");
-      setReceiptTotalAmount(null);
-      setReceiptMerchantName("");
-      setReceiptCurrency("NPR");
-      setReceiptStoredTotalAmount(null);
       focusRef.current.focus();
     }
 
     previousFetcherState.current = fetcher.state;
   }, [fetcher.state, isScanningReceipt]);
 
-  useEffect(() => () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-    }
-  }, []);
-
   useEffect(() => {
     const handleLanguageChange = () => setAppLanguage(getSelectedLanguage());
     window.addEventListener("budgetbrain-language-change", handleLanguageChange);
     return () => window.removeEventListener("budgetbrain-language-change", handleLanguageChange);
   }, []);
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    const updateStoredReceiptPreview = async () => {
-      if (!receiptTotalAmount) {
-        setReceiptStoredTotalAmount(null);
-        return;
-      }
-
-      if (receiptCurrency === BASE_CURRENCY) {
-        setReceiptStoredTotalAmount(Math.round(receiptTotalAmount));
-        return;
-      }
-
-      try {
-        const res = await api.get("/exchange/rate", {
-          params: { from: receiptCurrency, to: BASE_CURRENCY },
-        });
-        const rate = Number(res.data?.rate);
-        if (isCurrent && Number.isFinite(rate) && rate > 0) {
-          setReceiptStoredTotalAmount(Math.max(1, Math.round(receiptTotalAmount * rate)));
-        }
-      } catch (err) {
-        if (isCurrent) setReceiptStoredTotalAmount(null);
-      }
-    };
-
-    updateStoredReceiptPreview();
-    return () => {
-      isCurrent = false;
-    };
-  }, [receiptCurrency, receiptTotalAmount]);
 
   const parseReceiptText = (text) => {
     const lines = text
@@ -402,9 +319,28 @@ const AddExpenseForm = ({ budgets }) => {
     };
   };
 
-  const applyParsedReceipt = (parsed) => {
+  const convertReceiptAmountToAccountingCurrency = async (amount, currency = BASE_CURRENCY) => {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) return 0;
+    if (currency === BASE_CURRENCY) return Math.round(numericAmount);
+
+    const res = await api.get("/exchange/rate", {
+      params: { from: currency, to: BASE_CURRENCY },
+    });
+    const rate = Number(res.data?.rate);
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error(`Could not convert ${currency} to ${BASE_CURRENCY}`);
+    }
+
+    return Math.max(1, Math.round(numericAmount * rate));
+  };
+
+  const applyParsedReceipt = async (parsed) => {
+    const parsedCurrency = parsed.currency || BASE_CURRENCY;
+    const storedAmount = await convertReceiptAmountToAccountingCurrency(parsed.amount, parsedCurrency);
+
     if (focusRef.current) focusRef.current.value = parsed.name;
-    if (amountRef.current) amountRef.current.value = Math.round(parsed.amount);
+    if (amountRef.current) amountRef.current.value = storedAmount;
     const knownCategory = EXPENSE_CATEGORIES.some(([key]) => key === parsed.category);
     if (knownCategory) {
       setCategoryChoice(parsed.category);
@@ -416,14 +352,6 @@ const AddExpenseForm = ({ budgets }) => {
     if (budgetRef.current && !budgetRef.current.value) {
       budgetRef.current.value = budgets[0].id || budgets[0]._id;
     }
-    setReceiptTotalAmount(Number(parsed.amount || 0) > 0 ? Math.round(parsed.amount) : null);
-    setReceiptMerchantName(parsed.name || "Receipt total");
-    setReceiptCurrency(parsed.currency || "NPR");
-    setReceiptStoredTotalAmount(parsed.currency === BASE_CURRENCY ? Math.round(parsed.amount) : null);
-    setReceiptItems(parsed.items?.length
-      ? parsed.items
-      : [{ name: parsed.name || "Receipt expense", amount: Math.round(parsed.amount) }]
-    );
   };
 
   const scanReceiptImage = async (imageSource) => {
@@ -462,8 +390,8 @@ const AddExpenseForm = ({ budgets }) => {
         return;
       }
 
-      applyParsedReceipt(parsed);
-      toast.success(`${provider} read the receipt. Found ${parsed.items.length} transaction${parsed.items.length === 1 ? "" : "s"} to review.`);
+      await applyParsedReceipt(parsed);
+      toast.success(`${provider} read the receipt. Amount added to the expense form.`);
     } catch (err) {
       console.error("Receipt scan failed:", err);
       toast.error("Could not read the receipt. Try a clearer photo.");
@@ -481,145 +409,6 @@ const AddExpenseForm = ({ budgets }) => {
       await scanReceiptImage(file);
     } finally {
       event.target.value = "";
-    }
-  };
-
-  const openLiveCamera = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("Live camera is not supported in this browser.");
-      return;
-    }
-
-    setCameraError("");
-    setIsCameraOpen(true);
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-    } catch (err) {
-      console.error("Camera failed:", err);
-      setCameraError("Could not open the camera. Check browser camera permission.");
-    }
-  };
-
-  const closeLiveCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsCameraOpen(false);
-  };
-
-  const captureLiveReceipt = async () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || !video.videoWidth) {
-      toast.error("Camera is not ready yet.");
-      return;
-    }
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
-    closeLiveCamera();
-    if (blob) await scanReceiptImage(blob);
-  };
-
-  const toggleReceiptItem = (index) => {
-    setReceiptItems((items) => items.map((item, itemIndex) => (
-      itemIndex === index ? { ...item, skipped: !item.skipped } : item
-    )));
-  };
-
-  const updateReceiptItem = (index, field, value) => {
-    setReceiptItems((items) => items.map((item, itemIndex) => (
-      itemIndex === index
-        ? { ...item, [field]: field === "amount" ? Number(value) : value }
-        : item
-    )));
-  };
-
-  const convertReceiptAmountToAccountingCurrency = async (amount) => {
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount <= 0) return 0;
-    if (receiptCurrency === BASE_CURRENCY) return Math.round(numericAmount);
-
-    const res = await api.get("/exchange/rate", {
-      params: { from: receiptCurrency, to: BASE_CURRENCY },
-    });
-    const rate = Number(res.data?.rate);
-    if (!Number.isFinite(rate) || rate <= 0) {
-      throw new Error(`Could not convert ${receiptCurrency} to ${BASE_CURRENCY}`);
-    }
-
-    return Math.max(1, Math.round(numericAmount * rate));
-  };
-
-  const saveReceiptItems = async () => {
-    const budgetId = budgetRef.current?.value || budgets[0]?.id || budgets[0]?._id;
-    const selectedItems = receiptItems.filter((item) => (
-      !item.skipped
-      && item.name?.trim()
-      && Number.isFinite(Number(item.amount))
-      && Number(item.amount) > 0
-    ));
-    const selectedTotal = selectedItems.reduce((total, item) => total + Number(item.amount || 0), 0);
-    const totalTolerance = receiptTotalAmount ? Math.max(5, receiptTotalAmount * 0.05) : 0;
-    const shouldSaveReceiptTotal = receiptTotalAmount
-      && selectedItems.length > 0
-      && Math.abs(selectedTotal - receiptTotalAmount) > totalTolerance;
-    const expensesToSave = shouldSaveReceiptTotal
-      ? [{
-        name: receiptMerchantName || selectedItems[0]?.name || "Receipt total",
-        amount: receiptTotalAmount,
-      }]
-      : selectedItems;
-
-    if (!budgetId) return toast.error("Choose a budget before saving receipt items.");
-    if (!selectedItems.length) return toast.error("Select at least one receipt item to save.");
-
-    setIsSavingReceiptItems(true);
-    try {
-      const convertedExpenses = await Promise.all(expensesToSave.map(async (item) => ({
-        ...item,
-        amount: await convertReceiptAmountToAccountingCurrency(item.amount),
-      })));
-
-      await Promise.all(convertedExpenses.map((item) => createExpense({
-        name: item.name.trim(),
-        amount: item.amount,
-        budgetId,
-        category: finalCategory || "other",
-      })));
-      toast.success(`${expensesToSave.length} receipt transaction${expensesToSave.length === 1 ? "" : "s"} saved.`);
-      setReceiptItems([]);
-      setReceiptTotalAmount(null);
-      setReceiptMerchantName("");
-      setReceiptCurrency("NPR");
-      setReceiptStoredTotalAmount(null);
-      formRef.current?.reset();
-      setCategoryChoice("other");
-      setCustomCategory("");
-      revalidator.revalidate();
-    } catch (err) {
-      console.error("Receipt item save failed:", err);
-      toast.error(err.userMessage || "Could not save receipt transactions.");
-    } finally {
-      setIsSavingReceiptItems(false);
     }
   };
 
@@ -720,66 +509,7 @@ const AddExpenseForm = ({ budgets }) => {
             <CameraIcon width={20} />
             <span>{isScanningReceipt ? scanStatus || "Scanning..." : receiptCopy.uploadReceipt}</span>
           </button>
-          <button
-            type="button"
-            className="btn btn--outline receipt-scan-btn"
-            onClick={openLiveCamera}
-            disabled={isSubmitting || isScanningReceipt || !budgets.length}
-          >
-            <CameraIcon width={20} />
-            <span>{receiptCopy.liveScan}</span>
-          </button>
         </div>
-        {receiptItems.length > 0 && (
-          <div className="receipt-review-panel">
-            <div className="receipt-review-header">
-              <strong>{receiptCopy.detectedTitle}</strong>
-              <small>
-                {receiptTotalAmount
-                  ? `${receiptCopy.receiptTotal}: ${formatDetectedReceiptTotal(receiptTotalAmount, receiptCurrency)}. ${
-                    receiptStoredTotalAmount && receiptCurrency !== BASE_CURRENCY
-                      ? `Saves as ${formatStoredReceiptTotal(receiptStoredTotalAmount)}. `
-                      : ""
-                  }${receiptCopy.totalHint}`
-                  : receiptCopy.editHint}
-              </small>
-            </div>
-            <div className="receipt-items-list">
-              {receiptItems.map((item, index) => (
-                <label className="receipt-item-row" key={`${item.name}-${index}`}>
-                  <input
-                    type="checkbox"
-                    checked={!item.skipped}
-                    onChange={() => toggleReceiptItem(index)}
-                  />
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(event) => updateReceiptItem(index, "name", event.target.value)}
-                    aria-label={`Receipt item ${index + 1} name`}
-                  />
-                  <input
-                    type="number"
-                    step="1"
-                    min="1"
-                    value={item.amount}
-                    onChange={(event) => updateReceiptItem(index, "amount", event.target.value)}
-                    aria-label={`Receipt item ${index + 1} amount`}
-                  />
-                </label>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="btn btn--dark"
-              onClick={saveReceiptItems}
-              disabled={isSavingReceiptItems || isSubmitting || isScanningReceipt}
-            >
-              <span>{isSavingReceiptItems ? receiptCopy.saving : receiptCopy.saveDetected}</span>
-              <PlusCircleIcon width={20} />
-            </button>
-          </div>
-        )}
         <input type="hidden" name="_action" value="createExpense" />
         <button type="submit" className="btn btn--dark" disabled={isSubmitting || isScanningReceipt}>
           {isSubmitting ? (
@@ -794,30 +524,6 @@ const AddExpenseForm = ({ budgets }) => {
           )}
         </button>
       </fetcher.Form>
-      {isCameraOpen && (
-        <div className="receipt-camera-modal" role="dialog" aria-modal="true" aria-label="Live receipt scanner">
-          <div className="receipt-camera-sheet">
-            <div className="receipt-camera-header">
-              <strong>Live receipt scan</strong>
-              <button type="button" className="btn-icon" onClick={closeLiveCamera} aria-label="Close camera">
-                <XMarkIcon width={22} />
-              </button>
-            </div>
-            {cameraError ? (
-              <p className="receipt-camera-error">{cameraError}</p>
-            ) : (
-              <video ref={videoRef} className="receipt-camera-preview" playsInline muted />
-            )}
-            <canvas ref={canvasRef} hidden />
-            <div className="receipt-camera-actions">
-              <button type="button" className="btn btn--outline" onClick={closeLiveCamera}>Cancel</button>
-              <button type="button" className="btn btn--dark" onClick={captureLiveReceipt} disabled={Boolean(cameraError)}>
-                Capture receipt
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
