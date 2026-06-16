@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFetcher, useRevalidator } from "react-router-dom";
 import { toast } from "react-toastify";
 import { CameraIcon, PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { createExpense, getSelectedLanguage } from "../helpers";
+import { BASE_CURRENCY, createExpense, getSelectedLanguage } from "../helpers";
 import api from "../api";
 
 export const EXPENSE_CATEGORIES = [
@@ -148,6 +148,8 @@ const formatDetectedReceiptTotal = (amount, currency) => {
   return `Rs. ${Number(amount || 0).toLocaleString()}`;
 };
 
+const formatStoredReceiptTotal = (amount) => `Rs. ${Number(amount || 0).toLocaleString()}`;
+
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -161,6 +163,7 @@ const AddExpenseForm = ({ budgets }) => {
   const [receiptTotalAmount, setReceiptTotalAmount] = useState(null);
   const [receiptMerchantName, setReceiptMerchantName] = useState("");
   const [receiptCurrency, setReceiptCurrency] = useState("NPR");
+  const [receiptStoredTotalAmount, setReceiptStoredTotalAmount] = useState(null);
   const [appLanguage, setAppLanguage] = useState(getSelectedLanguage());
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
@@ -191,6 +194,7 @@ const AddExpenseForm = ({ budgets }) => {
       setReceiptTotalAmount(null);
       setReceiptMerchantName("");
       setReceiptCurrency("NPR");
+      setReceiptStoredTotalAmount(null);
       focusRef.current.focus();
     }
 
@@ -208,6 +212,39 @@ const AddExpenseForm = ({ budgets }) => {
     window.addEventListener("budgetbrain-language-change", handleLanguageChange);
     return () => window.removeEventListener("budgetbrain-language-change", handleLanguageChange);
   }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const updateStoredReceiptPreview = async () => {
+      if (!receiptTotalAmount) {
+        setReceiptStoredTotalAmount(null);
+        return;
+      }
+
+      if (receiptCurrency === BASE_CURRENCY) {
+        setReceiptStoredTotalAmount(Math.round(receiptTotalAmount));
+        return;
+      }
+
+      try {
+        const res = await api.get("/exchange/rate", {
+          params: { from: receiptCurrency, to: BASE_CURRENCY },
+        });
+        const rate = Number(res.data?.rate);
+        if (isCurrent && Number.isFinite(rate) && rate > 0) {
+          setReceiptStoredTotalAmount(Math.max(1, Math.round(receiptTotalAmount * rate)));
+        }
+      } catch (err) {
+        if (isCurrent) setReceiptStoredTotalAmount(null);
+      }
+    };
+
+    updateStoredReceiptPreview();
+    return () => {
+      isCurrent = false;
+    };
+  }, [receiptCurrency, receiptTotalAmount]);
 
   const parseReceiptText = (text) => {
     const lines = text
@@ -382,6 +419,7 @@ const AddExpenseForm = ({ budgets }) => {
     setReceiptTotalAmount(Number(parsed.amount || 0) > 0 ? Math.round(parsed.amount) : null);
     setReceiptMerchantName(parsed.name || "Receipt total");
     setReceiptCurrency(parsed.currency || "NPR");
+    setReceiptStoredTotalAmount(parsed.currency === BASE_CURRENCY ? Math.round(parsed.amount) : null);
     setReceiptItems(parsed.items?.length
       ? parsed.items
       : [{ name: parsed.name || "Receipt expense", amount: Math.round(parsed.amount) }]
@@ -515,6 +553,22 @@ const AddExpenseForm = ({ budgets }) => {
     )));
   };
 
+  const convertReceiptAmountToAccountingCurrency = async (amount) => {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) return 0;
+    if (receiptCurrency === BASE_CURRENCY) return Math.round(numericAmount);
+
+    const res = await api.get("/exchange/rate", {
+      params: { from: receiptCurrency, to: BASE_CURRENCY },
+    });
+    const rate = Number(res.data?.rate);
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error(`Could not convert ${receiptCurrency} to ${BASE_CURRENCY}`);
+    }
+
+    return Math.max(1, Math.round(numericAmount * rate));
+  };
+
   const saveReceiptItems = async () => {
     const budgetId = budgetRef.current?.value || budgets[0]?.id || budgets[0]?._id;
     const selectedItems = receiptItems.filter((item) => (
@@ -540,7 +594,12 @@ const AddExpenseForm = ({ budgets }) => {
 
     setIsSavingReceiptItems(true);
     try {
-      await Promise.all(expensesToSave.map((item) => createExpense({
+      const convertedExpenses = await Promise.all(expensesToSave.map(async (item) => ({
+        ...item,
+        amount: await convertReceiptAmountToAccountingCurrency(item.amount),
+      })));
+
+      await Promise.all(convertedExpenses.map((item) => createExpense({
         name: item.name.trim(),
         amount: item.amount,
         budgetId,
@@ -551,6 +610,7 @@ const AddExpenseForm = ({ budgets }) => {
       setReceiptTotalAmount(null);
       setReceiptMerchantName("");
       setReceiptCurrency("NPR");
+      setReceiptStoredTotalAmount(null);
       formRef.current?.reset();
       setCategoryChoice("other");
       setCustomCategory("");
@@ -676,7 +736,11 @@ const AddExpenseForm = ({ budgets }) => {
               <strong>{receiptCopy.detectedTitle}</strong>
               <small>
                 {receiptTotalAmount
-                  ? `${receiptCopy.receiptTotal}: ${formatDetectedReceiptTotal(receiptTotalAmount, receiptCurrency)}. ${receiptCopy.totalHint}`
+                  ? `${receiptCopy.receiptTotal}: ${formatDetectedReceiptTotal(receiptTotalAmount, receiptCurrency)}. ${
+                    receiptStoredTotalAmount && receiptCurrency !== BASE_CURRENCY
+                      ? `Saves as ${formatStoredReceiptTotal(receiptStoredTotalAmount)}. `
+                      : ""
+                  }${receiptCopy.totalHint}`
                   : receiptCopy.editHint}
               </small>
             </div>
