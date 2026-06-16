@@ -91,6 +91,8 @@ const AddExpenseForm = ({ budgets }) => {
   const [categoryChoice, setCategoryChoice] = useState("other");
   const [customCategory, setCustomCategory] = useState("");
   const [receiptItems, setReceiptItems] = useState([]);
+  const [receiptTotalAmount, setReceiptTotalAmount] = useState(null);
+  const [receiptMerchantName, setReceiptMerchantName] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const formRef = useRef();
@@ -116,6 +118,8 @@ const AddExpenseForm = ({ budgets }) => {
       formRef.current.reset();
       setCategoryChoice("other");
       setCustomCategory("");
+      setReceiptTotalAmount(null);
+      setReceiptMerchantName("");
       focusRef.current.focus();
     }
 
@@ -133,6 +137,13 @@ const AddExpenseForm = ({ budgets }) => {
       .split(/\r?\n/)
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter(Boolean);
+    const normalizedText = text
+      .replace(/[|]/g, "1")
+      .replace(/[Oo](?=[.,\d])/g, "0");
+    const normalizedLines = normalizedText
+      .split(/\r?\n/)
+      .map((line) => line.replace(/\s+/g, " ").trim())
+      .filter(Boolean);
 
     const amountPattern = /(?:rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
     const strongTotalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total/i;
@@ -142,7 +153,7 @@ const AddExpenseForm = ({ budgets }) => {
     const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
 
     const candidates = [];
-    lines.forEach((line, index) => {
+    normalizedLines.forEach((line, index) => {
       const matches = [...line.matchAll(amountPattern)];
       matches.forEach((match) => {
         const value = Number(match[1].replace(/,/g, ""));
@@ -163,6 +174,14 @@ const AddExpenseForm = ({ budgets }) => {
             + index / 100,
         });
       });
+      if (totalKeywords.test(line) && matches.length === 0 && normalizedLines[index + 1]) {
+        const nextMatches = [...normalizedLines[index + 1].matchAll(amountPattern)];
+        nextMatches.forEach((match) => {
+          const value = Number(match[1].replace(/,/g, ""));
+          if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
+          candidates.push({ value, score: 250 + index / 100 });
+        });
+      }
     });
 
     const amount = candidates
@@ -248,6 +267,8 @@ const AddExpenseForm = ({ budgets }) => {
     if (budgetRef.current && !budgetRef.current.value) {
       budgetRef.current.value = budgets[0].id || budgets[0]._id;
     }
+    setReceiptTotalAmount(Number(parsed.amount || 0) > 0 ? Math.round(parsed.amount) : null);
+    setReceiptMerchantName(parsed.name || "Receipt total");
     setReceiptItems(parsed.items?.length
       ? parsed.items
       : [{ name: parsed.name || "Receipt expense", amount: Math.round(parsed.amount) }]
@@ -389,20 +410,33 @@ const AddExpenseForm = ({ budgets }) => {
       && Number.isFinite(Number(item.amount))
       && Number(item.amount) > 0
     ));
+    const selectedTotal = selectedItems.reduce((total, item) => total + Number(item.amount || 0), 0);
+    const totalTolerance = receiptTotalAmount ? Math.max(5, receiptTotalAmount * 0.05) : 0;
+    const shouldSaveReceiptTotal = receiptTotalAmount
+      && selectedItems.length > 0
+      && Math.abs(selectedTotal - receiptTotalAmount) > totalTolerance;
+    const expensesToSave = shouldSaveReceiptTotal
+      ? [{
+        name: receiptMerchantName || selectedItems[0]?.name || "Receipt total",
+        amount: receiptTotalAmount,
+      }]
+      : selectedItems;
 
     if (!budgetId) return toast.error("Choose a budget before saving receipt items.");
     if (!selectedItems.length) return toast.error("Select at least one receipt item to save.");
 
     setIsSavingReceiptItems(true);
     try {
-      await Promise.all(selectedItems.map((item) => createExpense({
+      await Promise.all(expensesToSave.map((item) => createExpense({
         name: item.name.trim(),
         amount: item.amount,
         budgetId,
         category: finalCategory || "other",
       })));
-      toast.success(`${selectedItems.length} receipt transaction${selectedItems.length === 1 ? "" : "s"} saved.`);
+      toast.success(`${expensesToSave.length} receipt transaction${expensesToSave.length === 1 ? "" : "s"} saved.`);
       setReceiptItems([]);
+      setReceiptTotalAmount(null);
+      setReceiptMerchantName("");
       formRef.current?.reset();
       setCategoryChoice("other");
       setCustomCategory("");
@@ -526,7 +560,11 @@ const AddExpenseForm = ({ budgets }) => {
           <div className="receipt-review-panel">
             <div className="receipt-review-header">
               <strong>Detected receipt transactions</strong>
-              <small>Edit the items, uncheck anything wrong, then save them.</small>
+              <small>
+                {receiptTotalAmount
+                  ? `Receipt total: Rs. ${receiptTotalAmount.toLocaleString()}. This total will be used for the budget if item rows do not match.`
+                  : "Edit the items, uncheck anything wrong, then save them."}
+              </small>
             </div>
             <div className="receipt-items-list">
               {receiptItems.map((item, index) => (

@@ -4,7 +4,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import {
   BASE_CURRENCY,
   SUPPORTED_CURRENCIES,
-  fetchLiveExchangeRate,
+  refreshExchangeRate,
   getSelectedCurrency,
 } from '../helpers';
 
@@ -31,22 +31,29 @@ const CurrencyRateWidget = () => {
   const updateRate = async (nextCurrency, showToast = true) => {
     setIsRefreshing(true);
     try {
-      const payload = await fetchLiveExchangeRate(nextCurrency);
+      const payload = await refreshExchangeRate(nextCurrency);
       localStorage.setItem('budgetbrain-live-rate-currency', payload.to);
       localStorage.setItem('budgetbrain-live-rate', String(payload.rate));
       localStorage.setItem('budgetbrain-live-rate-updated', new Date(payload.fetchedAt || Date.now()).toISOString());
       localStorage.setItem('budgetbrain-live-rate-provider', payload.provider || 'Exchange rate provider');
+      setDisplayCurrency(payload.to);
       setRateCurrency(payload.to);
       setRate(payload.rate);
       setUpdatedAt(localStorage.getItem('budgetbrain-live-rate-updated'));
       setProvider(payload.provider);
-      if (showToast) toast.success(`Live rate checked for ${payload.to}`);
+      if (showToast) toast.success(`Display currency updated to ${payload.to}`);
     } catch (err) {
       toast.error(err.userMessage || 'Could not refresh exchange rate');
     } finally {
       setIsRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    const lastUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
+    const isStale = !lastUpdated || Date.now() - lastUpdated > 60 * 60 * 1000;
+    if (isStale) updateRate(rateCurrency, false);
+  }, []);
 
   const handleCurrencyChange = (event) => {
     updateRate(event.target.value);
@@ -62,7 +69,7 @@ const CurrencyRateWidget = () => {
         <span className="currency-kicker">Live Currency Rate</span>
         <strong>1 {BASE_CURRENCY} = {rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} {rateCurrency}</strong>
         <small>
-          Displaying app amounts in {displayCurrency}. Rate lookup does not change display currency.
+          Displaying app amounts in {displayCurrency}. Changing the selector updates all shown amounts.
           {' '}Updated {updatedLabel}
           {provider && rateCurrency !== BASE_CURRENCY ? ` by ${provider}` : ''}
         </small>
