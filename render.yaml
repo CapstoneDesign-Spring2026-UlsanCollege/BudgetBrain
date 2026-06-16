@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: budgetbrain-paddleocr
+    env: docker
+    plan: starter
+    rootDir: paddleocr-service
+    healthCheckPath: /health
+    envVars:
+      - key: PADDLEOCR_LANG
+        value: en
+      - key: OCR_API_KEY
+        generateValue: true

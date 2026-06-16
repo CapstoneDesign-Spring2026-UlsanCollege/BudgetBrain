@@ -91,6 +91,8 @@ Optional env var: `EXCHANGE_RATE_API_URL` for overriding the live currency provi
 Optional receipt OCR env vars: `PADDLEOCR_API_URL`, `PADDLEOCR_API_KEY`.
 Email delivery env vars: `RESEND_API_KEY` and `PASSWORD_RESET_FROM` are required for production welcome emails and forgot-password reset codes.
 
+The deployable PaddleOCR service lives in [`paddleocr-service`](paddleocr-service/README.md). Deploy that service separately, then paste its `/ocr` URL into `PADDLEOCR_API_URL` in Vercel.
+
 Build: `npm run build`  
 Output: `dist`
 
