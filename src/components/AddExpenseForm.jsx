@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFetcher, useRevalidator } from "react-router-dom";
 import { toast } from "react-toastify";
 import { CameraIcon, PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { createExpense } from "../helpers";
+import { createExpense, getSelectedLanguage } from "../helpers";
 import api from "../api";
 
 export const EXPENSE_CATEGORIES = [
@@ -108,6 +108,46 @@ const makeReceiptNameReadable = (rawName, fallback = "Receipt expense") => {
   return translated ? translated.label : cleaned;
 };
 
+const RECEIPT_LANGUAGE_COPY = {
+  en: {
+    uploadReceipt: "Upload receipt",
+    liveScan: "Live scan",
+    detectedTitle: "Detected receipt transactions",
+    editHint: "Edit the items, uncheck anything wrong, then save them.",
+    receiptTotal: "Receipt total",
+    totalHint: "This total will be used for the budget if item rows do not match.",
+    saveDetected: "Save detected transactions",
+    saving: "Saving...",
+  },
+  ne: {
+    uploadReceipt: "रसिद अपलोड गर्नुहोस्",
+    liveScan: "लाइभ स्क्यान",
+    detectedTitle: "पत्ता लागेका रसिद कारोबारहरू",
+    editHint: "गलत कुरा हटाउनुहोस्, चाहिएको आइटम सच्याउनुहोस्, अनि सेभ गर्नुहोस्।",
+    receiptTotal: "रसिद जम्मा",
+    totalHint: "आइटमहरू नमिलेमा यो जम्मा रकम बजेटमा प्रयोग हुन्छ।",
+    saveDetected: "पत्ता लागेका कारोबार सेभ गर्नुहोस्",
+    saving: "सेभ हुँदैछ...",
+  },
+  ko: {
+    uploadReceipt: "영수증 업로드",
+    liveScan: "실시간 스캔",
+    detectedTitle: "감지된 영수증 거래",
+    editHint: "항목을 수정하고 잘못된 항목은 선택 해제한 뒤 저장하세요.",
+    receiptTotal: "영수증 합계",
+    totalHint: "항목 합계가 맞지 않으면 이 합계 금액을 예산에 사용합니다.",
+    saveDetected: "감지된 거래 저장",
+    saving: "저장 중...",
+  },
+};
+
+const getReceiptCopy = (language) => RECEIPT_LANGUAGE_COPY[language] || RECEIPT_LANGUAGE_COPY.en;
+
+const formatDetectedReceiptTotal = (amount, currency) => {
+  if (currency === "KRW") return `₩${Number(amount || 0).toLocaleString()}`;
+  return `Rs. ${Number(amount || 0).toLocaleString()}`;
+};
+
 const AddExpenseForm = ({ budgets }) => {
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -120,6 +160,8 @@ const AddExpenseForm = ({ budgets }) => {
   const [receiptItems, setReceiptItems] = useState([]);
   const [receiptTotalAmount, setReceiptTotalAmount] = useState(null);
   const [receiptMerchantName, setReceiptMerchantName] = useState("");
+  const [receiptCurrency, setReceiptCurrency] = useState("NPR");
+  const [appLanguage, setAppLanguage] = useState(getSelectedLanguage());
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const formRef = useRef();
@@ -137,6 +179,7 @@ const AddExpenseForm = ({ budgets }) => {
   const finalCategory = categoryChoice === "custom"
     ? customCategory.trim()
     : categoryChoice;
+  const receiptCopy = getReceiptCopy(appLanguage);
 
   useEffect(() => {
     const justSubmitted = previousFetcherState.current === "submitting" && fetcher.state === "idle";
@@ -147,6 +190,7 @@ const AddExpenseForm = ({ budgets }) => {
       setCustomCategory("");
       setReceiptTotalAmount(null);
       setReceiptMerchantName("");
+      setReceiptCurrency("NPR");
       focusRef.current.focus();
     }
 
@@ -157,6 +201,12 @@ const AddExpenseForm = ({ budgets }) => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
     }
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = () => setAppLanguage(getSelectedLanguage());
+    window.addEventListener("budgetbrain-language-change", handleLanguageChange);
+    return () => window.removeEventListener("budgetbrain-language-change", handleLanguageChange);
   }, []);
 
   const parseReceiptText = (text) => {
@@ -171,6 +221,19 @@ const AddExpenseForm = ({ budgets }) => {
       .split(/\r?\n/)
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter(Boolean);
+    const normalizeReceiptAmount = (rawValue) => {
+      const compactValue = String(rawValue || "")
+        .replace(/\s+/g, "")
+        .replace(/,/g, "")
+        .trim();
+
+      if (/^\d{1,3}\.\d{3}$/.test(compactValue)) {
+        return Number(compactValue.replace(".", ""));
+      }
+
+      return Number(compactValue);
+    };
+    const hasKrwReceipt = /[\u20A9\uC6D0]|krw|won|[\u3131-\u318E\uAC00-\uD7A3]/i.test(normalizedText);
 
     const amountPattern = /(?:rs\.?|npr|रू|रु|रुपैयाँ|₹)?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/gi;
     const strongTotalKeywords = /grand\s*total|net\s*(amount|total)|amount\s*due|balance\s*due|total\s*amount|invoice\s*total|bill\s*total/i;
@@ -178,6 +241,8 @@ const AddExpenseForm = ({ budgets }) => {
     const subtotalKeywords = /sub\s*total|subtotal|taxable|before\s*tax/i;
     const noisyAmountLine = /invoice\s*(no|#)|bill\s*(no|#)|phone|tel|mobile|vat\s*(no|#)|pan|date|time|table|token|order\s*(no|#)|qty|quantity|unit\s*price/i;
     const paymentNoise = /change|tender|cash|card|wallet|paid\s*by|payment/i;
+    const groupedAmountPattern = /([0-9]{1,3}(?:[\s,][0-9]{3})+(?:\.[0-9]{1,2})?)/g;
+    const krwAmountPattern = /(?:\u20A9|krw|won|\uC6D0)\s*([0-9][0-9,.\s]{0,14})|([0-9][0-9,.\s]{0,14})\s*(?:\u20A9|krw|won|\uC6D0)/gi;
     const multilingualStrongTotalKeywords = /합계|총액|총\s*합계|결제\s*금액|승인\s*금액|청구\s*금액|जम्मा|कुल/i;
     const multilingualTotalKeywords = /합계|총액|총\s*합계|결제\s*금액|승인\s*금액|청구\s*금액|받을\s*금액|जम्मा|कुल|तिर्नुपर्ने/i;
     const multilingualSubtotalKeywords = /소계|공급\s*가액|과세\s*물품|면세\s*물품|उपजम्मा/i;
@@ -186,9 +251,13 @@ const AddExpenseForm = ({ budgets }) => {
 
     const candidates = [];
     normalizedLines.forEach((line, index) => {
-      const matches = [...line.matchAll(amountPattern)];
+      const matches = [
+        ...line.matchAll(amountPattern),
+        ...line.matchAll(groupedAmountPattern),
+        ...line.matchAll(krwAmountPattern),
+      ];
       matches.forEach((match) => {
-        const value = Number(match[1].replace(/,/g, ""));
+        const value = normalizeReceiptAmount(match[1] || match[2]);
         if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
         const hasStrongTotal = strongTotalKeywords.test(line) || multilingualStrongTotalKeywords.test(line);
         const hasTotal = totalKeywords.test(line) || multilingualTotalKeywords.test(line);
@@ -207,17 +276,24 @@ const AddExpenseForm = ({ budgets }) => {
         });
       });
       if ((totalKeywords.test(line) || multilingualTotalKeywords.test(line)) && matches.length === 0 && normalizedLines[index + 1]) {
-        const nextMatches = [...normalizedLines[index + 1].matchAll(amountPattern)];
+        const nextMatches = [
+          ...normalizedLines[index + 1].matchAll(amountPattern),
+          ...normalizedLines[index + 1].matchAll(groupedAmountPattern),
+          ...normalizedLines[index + 1].matchAll(krwAmountPattern),
+        ];
         nextMatches.forEach((match) => {
-          const value = Number(match[1].replace(/,/g, ""));
+          const value = normalizeReceiptAmount(match[1] || match[2]);
           if (!Number.isFinite(value) || value <= 0 || value > 10000000) return;
           candidates.push({ value, score: 250 + index / 100 });
         });
       }
     });
 
-    const amount = candidates
-      .filter((candidate) => candidate.score > -120)
+    const scoredCandidates = candidates.filter((candidate) => candidate.score > -120);
+    const meaningfulCandidates = hasKrwReceipt
+      ? scoredCandidates.filter((candidate) => candidate.value >= 1000)
+      : scoredCandidates;
+    const amount = (meaningfulCandidates.length ? meaningfulCandidates : scoredCandidates)
       .sort((a, b) => b.score - a.score || b.value - a.value)[0]?.value;
 
     const merchant = lines.find((line) => (
@@ -283,6 +359,7 @@ const AddExpenseForm = ({ budgets }) => {
     return {
       amount,
       name: readableMerchant,
+      currency: hasKrwReceipt ? "KRW" : "NPR",
       category,
       items: itemLinesMatchTotal ? itemLines : fallbackItem,
     };
@@ -304,6 +381,7 @@ const AddExpenseForm = ({ budgets }) => {
     }
     setReceiptTotalAmount(Number(parsed.amount || 0) > 0 ? Math.round(parsed.amount) : null);
     setReceiptMerchantName(parsed.name || "Receipt total");
+    setReceiptCurrency(parsed.currency || "NPR");
     setReceiptItems(parsed.items?.length
       ? parsed.items
       : [{ name: parsed.name || "Receipt expense", amount: Math.round(parsed.amount) }]
@@ -472,6 +550,7 @@ const AddExpenseForm = ({ budgets }) => {
       setReceiptItems([]);
       setReceiptTotalAmount(null);
       setReceiptMerchantName("");
+      setReceiptCurrency("NPR");
       formRef.current?.reset();
       setCategoryChoice("other");
       setCustomCategory("");
@@ -579,7 +658,7 @@ const AddExpenseForm = ({ budgets }) => {
             disabled={isSubmitting || isScanningReceipt || !budgets.length}
           >
             <CameraIcon width={20} />
-            <span>{isScanningReceipt ? scanStatus || "Scanning..." : "Upload receipt"}</span>
+            <span>{isScanningReceipt ? scanStatus || "Scanning..." : receiptCopy.uploadReceipt}</span>
           </button>
           <button
             type="button"
@@ -588,17 +667,17 @@ const AddExpenseForm = ({ budgets }) => {
             disabled={isSubmitting || isScanningReceipt || !budgets.length}
           >
             <CameraIcon width={20} />
-            <span>Live scan</span>
+            <span>{receiptCopy.liveScan}</span>
           </button>
         </div>
         {receiptItems.length > 0 && (
           <div className="receipt-review-panel">
             <div className="receipt-review-header">
-              <strong>Detected receipt transactions</strong>
+              <strong>{receiptCopy.detectedTitle}</strong>
               <small>
                 {receiptTotalAmount
-                  ? `Receipt total: Rs. ${receiptTotalAmount.toLocaleString()}. This total will be used for the budget if item rows do not match.`
-                  : "Edit the items, uncheck anything wrong, then save them."}
+                  ? `${receiptCopy.receiptTotal}: ${formatDetectedReceiptTotal(receiptTotalAmount, receiptCurrency)}. ${receiptCopy.totalHint}`
+                  : receiptCopy.editHint}
               </small>
             </div>
             <div className="receipt-items-list">
@@ -632,7 +711,7 @@ const AddExpenseForm = ({ budgets }) => {
               onClick={saveReceiptItems}
               disabled={isSavingReceiptItems || isSubmitting || isScanningReceipt}
             >
-              <span>{isSavingReceiptItems ? "Saving..." : "Save detected transactions"}</span>
+              <span>{isSavingReceiptItems ? receiptCopy.saving : receiptCopy.saveDetected}</span>
               <PlusCircleIcon width={20} />
             </button>
           </div>

@@ -14,6 +14,11 @@ export const SUPPORTED_CURRENCIES = [
   ['KRW', 'KRW - South Korean Won'],
   ['INR', 'INR - Indian Rupee'],
 ];
+export const SUPPORTED_LANGUAGES = [
+  ['en', 'English'],
+  ['ne', 'नेपाली'],
+  ['ko', '한국어'],
+];
 
 export const waait = () =>
   new Promise((res) => setTimeout(res, Math.random() * 800));
@@ -120,6 +125,21 @@ export const getSelectedCurrency = () => {
   } catch {
     return BASE_CURRENCY;
   }
+};
+
+export const getSelectedLanguage = () => {
+  try {
+    return localStorage.getItem('budgetbrain-language') || 'en';
+  } catch {
+    return 'en';
+  }
+};
+
+export const setSelectedLanguage = (language) => {
+  const selectedLanguage = SUPPORTED_LANGUAGES.some(([code]) => code === language) ? language : 'en';
+  localStorage.setItem('budgetbrain-language', selectedLanguage);
+  window.dispatchEvent(new Event('budgetbrain-language-change'));
+  return selectedLanguage;
 };
 
 export const getExchangeRate = () => {

@@ -10,13 +10,17 @@ import {
 import {
   BASE_CURRENCY,
   SUPPORTED_CURRENCIES,
+  SUPPORTED_LANGUAGES,
   getExchangeRate,
+  getSelectedLanguage,
   refreshExchangeRate,
+  setSelectedLanguage,
 } from '../helpers';
 
 const Settings = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [currency, setCurrency] = useState(localStorage.getItem('budgetbrain-currency') || BASE_CURRENCY);
+  const [language, setLanguage] = useState(getSelectedLanguage());
   const [exchangeRate, setExchangeRate] = useState(getExchangeRate());
   const [exchangeUpdated, setExchangeUpdated] = useState(localStorage.getItem('budgetbrain-exchange-updated'));
   const [exchangeProvider, setExchangeProvider] = useState(localStorage.getItem('budgetbrain-exchange-provider'));
@@ -83,6 +87,12 @@ const Settings = () => {
     } finally {
       setIsRefreshingRate(false);
     }
+  };
+
+  const handleLanguageChange = (event) => {
+    const nextLanguage = setSelectedLanguage(event.target.value);
+    setLanguage(nextLanguage);
+    toast.success('Language preference updated');
   };
 
   const handleNotificationsToggle = () => {
@@ -154,6 +164,21 @@ const Settings = () => {
           <button className="btn btn--outline" onClick={handleRefreshRate} disabled={isRefreshingRate}>
             {isRefreshingRate ? 'Refreshing...' : 'Refresh Rate'}
           </button>
+        </div>
+      </div>
+
+      <div className="profile-section">
+        <h3><GlobeAltIcon width={18} style={{ display: 'inline', verticalAlign: 'middle' }} /> Language</h3>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <strong>App Language</strong>
+            <p style={{ color: 'hsl(215 20% 65%)', fontSize: '0.9rem' }}>Choose English, Nepali, or Korean for supported app and receipt scanner labels</p>
+          </div>
+          <select value={language} onChange={handleLanguageChange} className="settings-select">
+            {SUPPORTED_LANGUAGES.map(([code, label]) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
