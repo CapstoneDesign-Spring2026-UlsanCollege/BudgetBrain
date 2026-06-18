@@ -1,12 +1,42 @@
+databases:
+  - name: budgetbrain-db
+    plan: free
+    databaseName: budgetbrain
+    user: budgetbrain
+
 services:
   - type: web
-    name: budgetbrain-paddleocr
-    env: docker
-    plan: starter
-    rootDir: paddleocr-service
-    healthCheckPath: /health
+    name: budgetbrain
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
     envVars:
-      - key: PADDLEOCR_LANG
-        value: korean
-      - key: OCR_API_KEY
+      - key: DB_HOST
+        fromDatabase:
+          name: budgetbrain-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: budgetbrain-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: budgetbrain-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: budgetbrain-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: budgetbrain-db
+          property: password
+      - key: JWT_SECRET
         generateValue: true
+      - key: CLIENT_ORIGIN
+        value: https://budgetbrain.onrender.com
+      - key: PADDLEOCR_API_URL
+        sync: false
+      - key: PADDLEOCR_API_KEY
+        sync: false

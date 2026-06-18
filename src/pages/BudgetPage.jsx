@@ -44,6 +44,7 @@ export async function budgetAction({ request }) {
         amount: values.newExpenseAmount,
         budgetId: values.newExpenseBudget,
         category: values.category,
+        receiptImage: values.receiptImage,
       });
       return toast.success(`Expense ${values.newExpense} created!`);
     } catch (e) {

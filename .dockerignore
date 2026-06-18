@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+outputs
+Docs/_build-artifacts
+backend/node_modules
+spring-backend/target
+*.log
+*.env

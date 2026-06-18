@@ -82,7 +82,7 @@ export const createBudget = async ({ name, amount }) => {
   }
 };
 
-export const createExpense = async ({ name, amount, budgetId, category }) => {
+export const createExpense = async ({ name, amount, budgetId, category, receiptImage }) => {
   try {
     const res = await api.post('/expenses', {
       name,
@@ -90,6 +90,7 @@ export const createExpense = async ({ name, amount, budgetId, category }) => {
       currency: ACCOUNTING_CURRENCY,
       budgetId,
       category,
+      receiptImage: receiptImage || undefined,
     });
     return res.data;
   } catch (error) {

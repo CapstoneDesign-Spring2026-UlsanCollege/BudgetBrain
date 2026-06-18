@@ -171,6 +171,7 @@ const AddExpenseForm = ({ budgets }) => {
   const isSubmitting = fetcher.state === "submitting";
   const [isScanningReceipt, setIsScanningReceipt] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
+  const [receiptImage, setReceiptImage] = useState("");
   const [categoryChoice, setCategoryChoice] = useState("other");
   const [customCategory, setCustomCategory] = useState("");
   const [appLanguage, setAppLanguage] = useState(getSelectedLanguage());
@@ -195,6 +196,7 @@ const AddExpenseForm = ({ budgets }) => {
       formRef.current.reset();
       setCategoryChoice("other");
       setCustomCategory("");
+      setReceiptImage("");
       focusRef.current.focus();
     }
 
@@ -539,6 +541,8 @@ const AddExpenseForm = ({ budgets }) => {
     if (!file) return;
 
     try {
+      const imageData = await imageSourceToDataUrl(file);
+      setReceiptImage(imageData);
       await scanReceiptImage(file);
     } finally {
       event.target.value = "";
@@ -643,6 +647,13 @@ const AddExpenseForm = ({ budgets }) => {
             <span>{isScanningReceipt ? scanStatus || "Scanning..." : receiptCopy.uploadReceipt}</span>
           </button>
         </div>
+        {receiptImage && (
+          <div className="receipt-preview">
+            <img src={receiptImage} alt="Receipt preview" />
+            <button type="button" className="clear-receipt-btn" onClick={() => setReceiptImage("")}>Remove image</button>
+          </div>
+        )}
+        <input type="hidden" name="receiptImage" value={receiptImage} />
         <input type="hidden" name="_action" value="createExpense" />
         <button type="submit" className="btn btn--dark" disabled={isSubmitting || isScanningReceipt}>
           {isSubmitting ? (

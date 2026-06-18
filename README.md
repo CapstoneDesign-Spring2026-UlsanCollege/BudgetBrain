@@ -1,134 +1,84 @@
 # BudgetBrain
 
-BudgetBrain is a full-stack budget planning web app built with React and Express. It helps college students track expenses, manage budgets, set savings goals, and see their spending habits through charts.
+BudgetBrain is a full-stack budget planner built with React, Spring Boot, PostgreSQL, and Spring Data JPA.
 
-## Features
+## Required features
 
-- Register and login with JWT authentication
-- Reset forgotten passwords through secure, expiring email codes
-- Create, edit, and delete budgets by category
-- Add, edit, and delete expenses within budgets
-- Set savings goals and track progress
-- View spending analytics with charts
-- Scan receipts with PaddleOCR service support and browser OCR fallback
-- Dark and light theme toggle
-- Profile with avatar selection
-- Responsive design for mobile and desktop
-- Premium UI with 3D and liquid effects
+- Signup, login, logout, profile management, and password reset
+- PostgreSQL persistence through JPA entities and repositories
+- CRUD for budgets, expenses, and savings goals
+- Receipt-image upload, preview, storage, and display
+- Expense keyword search and filters
+- Responsive dark/light interface
+- GitHub source control and Render Blueprint deployment
 
-## Tech Stack
+## Technology
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, Vite, React Router v6 |
-| Backend | Node.js, Express 5.x |
-| Database | MongoDB (Atlas + in-memory fallback) |
-| Auth | JWT (JSON Web Tokens) |
-| Charts | Recharts |
-| OCR | Optional PaddleOCR service, browser Tesseract fallback |
-| Styling | Vanilla CSS with CSS variables |
-| Deployment | Vercel |
+| Frontend | React 18, Vite, React Router, Recharts |
+| Backend | Java 21, Spring Boot 3, Spring Security |
+| Database | PostgreSQL, Spring Data JPA, Hibernate |
+| Authentication | JWT, BCrypt |
+| Deployment | Docker, Render |
 
-## Live Demo
+## Local development
 
-https://budgetbrain.vercel.app
+Prerequisites: Node.js 22, Java 21, Maven, and PostgreSQL.
 
-## Installation
+Legacy Vercel demo during the Render migration: https://budgetbrain.vercel.app
 
-1. Clone the repo:
-   ```sh
-   git clone https://github.com/CapstoneDesign-Spring2026-UlsanCollege/BudgetBrain.git
-   ```
+Create a PostgreSQL database named `budgetbrain`, then set these environment variables:
 
-2. Install frontend dependencies:
-   ```sh
-   npm install
-   ```
+```text
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=budgetbrain
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+JWT_SECRET=replace_with_at_least_32_random_characters
+CLIENT_ORIGIN=http://localhost:5173
+```
 
-3. Install backend dependencies:
-   ```sh
-   cd backend
-   npm install
-   cd ..
-   ```
+Start the Spring API:
 
-4. Create `backend/.env`:
-   ```sh
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_strong_jwt_secret
-   PORT=5000
-   # Optional: override the live exchange-rate provider URL.
-   # Use {base} where the base currency code should be inserted.
-   EXCHANGE_RATE_API_URL=https://open.er-api.com/v6/latest/{base}
-   # Required in production for welcome emails and forgot-password reset codes.
-   RESEND_API_KEY=your_resend_api_key
-   PASSWORD_RESET_FROM=BudgetBrain <verified-sender@yourdomain.com>
-   # Optional: PaddleOCR-compatible service endpoint for receipt scanning.
-   # The app POSTs { image, imageBase64 } and accepts text/fullText/ocrText-style responses.
-   PADDLEOCR_API_URL=https://your-paddleocr-service.example.com/ocr
-   PADDLEOCR_API_KEY=optional_bearer_token
-   ```
+```sh
+cd spring-backend
+mvn spring-boot:run
+```
 
-## Usage
+Start the React development server in another terminal:
 
-1. Start backend:
-   ```sh
-   cd backend
-   npm start
-   ```
+```sh
+npm install
+npm run dev
+```
 
-2. Start frontend (second terminal):
-   ```sh
-   npm run dev
-   ```
+Open `http://localhost:5173`.
 
-3. Open http://localhost:5173
+## Tests and builds
 
-## Deployment
+```sh
+npm test
+cd spring-backend
+mvn test
+```
 
-Deployed on Vercel. Required env vars: `MONGO_URI`, `JWT_SECRET`.
-Optional env var: `EXCHANGE_RATE_API_URL` for overriding the live currency provider.
-Optional receipt OCR env vars: `PADDLEOCR_API_URL`, `PADDLEOCR_API_KEY`.
-Email delivery env vars: `RESEND_API_KEY` and `PASSWORD_RESET_FROM` are required for production welcome emails and forgot-password reset codes.
+The former Express/MongoDB prototype remains in `backend/` only as project history. It is not part of the current build or deployment.
 
-The deployable PaddleOCR service lives in [`paddleocr-service`](paddleocr-service/README.md). Deploy that service separately, then paste its `/ocr` URL into `PADDLEOCR_API_URL` in Vercel.
+## Render deployment
 
-Build: `npm run build`  
-Output: `dist`
+1. Push the repository to GitHub.
+2. In Render, choose **New > Blueprint** and select the repository.
+3. Render reads `render.yaml`, provisions PostgreSQL, builds `Dockerfile`, and deploys the application.
+4. Set optional `PADDLEOCR_API_URL` and `PADDLEOCR_API_KEY` values if an OCR service is available.
+5. After deployment, replace the `CLIENT_ORIGIN` value with the actual Render web-service URL if the generated name differs.
+
+The frontend and API share one origin. Spring Boot serves the compiled React assets, so no separate frontend deployment is required.
 
 ## Documentation
 
-All docs are in the [Docs](/Docs) folder:
-
-### Quick Links
-| Resource | Link |
-|----------|------|
-| Docs Index | [Docs/README.md](Docs/README.md) |
-| Final Report | [Final Portfolio Information/FINAL_REPORT.md](Final%20Portfolio%20Information/FINAL_REPORT.md) |
-| Demo Script | [Final Portfolio Information/FINAL_DEMO_SCRIPT.md](Final%20Portfolio%20Information/FINAL_DEMO_SCRIPT.md) |
-| Release Notes | [Docs/RELEASE_NOTES_V1.md](Docs/RELEASE_NOTES_V1.md) |
-| Handoff Guide | [Docs/HANDOFF_GUIDE.md](Docs/HANDOFF_GUIDE.md) |
-| Weekly Reports | [Docs/weeks/](Docs/weeks/) |
-| Sprint Packets | [Docs/sprint-packets/](Docs/sprint-packets/) |
-
-### Core Documents
-- [Project Overview](Docs/PROJECT.md)
-- [Architecture](Docs/ARCHITECTURE_SKETCH.md)
-- [Design Doc](Docs/DESIGN_DOC_V1.md)
-- [System Architecture](Docs/SYSTEM_ARCHITECTURE.md)
-- [Wireframes](Docs/WIREFRAMES.md)
-- [User Stories](Docs/user_stories.md)
-- [Team Agreement](Docs/TEAM_AGREEMENT.md)
-- [API Reference](Docs/API_REFERENCE.md)
-- [Database Design](Docs/DATABASE_DESIGN.md)
-- [Testing Plan](Docs/TESTING_PLAN.md)
-- [Deployment Guide](Docs/DEPLOYMENT_GUIDE.md)
-- [User Guide](Docs/USER_GUIDE.md)
-
-### Project Summaries
-- [Week 15 Final Summary](PROJECT/WEEK_15/README.md)
-- [Week 12 Summary](PROJECT/WEEK_12/README.md)
-
-## License
-
-MIT
+- [Final report](Final%20Portfolio%20Information/FINAL_REPORT.md)
+- [Database design](Docs/DATABASE_DESIGN.md)
+- [API reference](Docs/API_REFERENCE.md)
+- [Deployment guide](Docs/DEPLOYMENT_GUIDE.md)

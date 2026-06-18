@@ -9,6 +9,22 @@ import {
   getAllMatchingItems,
 } from "../helpers";
 import { getExpenseCategoryMeta } from "./AddExpenseForm";
+import api from "../api";
+
+const ReceiptThumbnail = ({ expense }) => {
+  const [source, setSource] = useState("");
+  useEffect(() => {
+    if (!expense.imageUrl) return undefined;
+    let active = true;
+    let objectUrl = "";
+    api.get(expense.imageUrl.replace(/^\/api/, ""), { responseType: "blob" }).then(({ data }) => {
+      objectUrl = URL.createObjectURL(data);
+      if (active) setSource(objectUrl);
+    }).catch(() => {});
+    return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [expense.imageUrl]);
+  return source ? <a href={source} target="_blank" rel="noreferrer" title="Open receipt"><img className="receipt-thumbnail" src={source} alt={`${expense.name} receipt`} /></a> : null;
+};
 
 const ExpenseItem = ({ expense, showBudget }) => {
   const fetcher = useFetcher();
@@ -43,6 +59,7 @@ const ExpenseItem = ({ expense, showBudget }) => {
     <>
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ReceiptThumbnail expense={expense} />
           <span className="category-badge" title={catLabel}>{catIcon} {catLabel}</span>
           {editing ? (
             <input
